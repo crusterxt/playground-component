@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>V Playground: Run, Edit, Share V Code Online</title>
+
+    <meta property="og:title" content="V Playground: Run, Edit, Share V Code Online"/>
+    <meta property="og:description" content="Place where you can run, edit and share V code online."/>
+    <meta property="og:image" content="preview.png"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://play.vlang.io"/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"/>
+
+    <link rel="stylesheet" href="./style.css">
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+</head>
+<body>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+    article {
+        box-sizing: border-box;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    pre {
+        font-family: "JetBrains Mono", "Fira Mono", JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo, monospace;
+
+        box-sizing: border-box;
+
+        margin-bottom: 16px;
+        margin-top: 0;
+
+        background-color: #f6f8fa;
+        border-radius: 3px;
+        font-size: 15px;
+        line-height: 1.45;
+        overflow: auto;
+        padding: 10px 15px;
+    }
+
+    pre code {
+        display: block;
+    }
+
+    code {
+        font-family: "JetBrains Mono", "Fira Mono", JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo, monospace;
+
+        box-sizing: border-box;
+
+        background-color: transparent;
+        border: 0;
+        display: inline;
+        line-height: inherit;
+        margin: 0;
+        overflow: visible;
+        padding: 0;
+        word-wrap: normal;
+    }
+
+    code.inline {
+        background-color: #eef0f3;
+        border-radius: 5px;
+        padding: 3px 7px;
+    }
+</style>
+
+<article>
+    <h1>V Embedded Playground</h1>
+
+    <p>
+        Add next JS code:
+    </p>
+    <pre><code class="hljs language-javascript">const playground = new Playground('.vlang-code', `
+// Hello, embedded V playground!
+println("Hello, world!")
+`)</code></pre>
+
+    <p>and HTML:</p>
+
+    <pre><code class="hljs language-html">&lt;div class="vlang-code" data-theme="light">&lt;/div></code></pre>
+
+    <p>and you will get:</p>
+
+    <div class="vlang-code" data-theme="light"></div>
+
+    <p>
+        To use dark theme, add
+        <code class="hljs language-html inline">data-theme="dark"</code>
+        to
+        <code class="hljs language-html inline">&lt;div class="vlang-code"></code>:
+    </p>
+
+    <div class="vlang-code-2"></div>
+
+    <p>
+        <br>
+        <br>
+        <br>
+        <br>
+    </p>
+</article>
+
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/comment/continuecomment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/comment/comment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script src="javascript.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="./vlang-playground.js"></script>
+<script>
+    const playground = new Playground('.vlang-code', `
+// Hello, embedded V playground!
+println("Hello, world!")
+`)
+
+    const playground2 = new Playground('.vlang-code-2', `
+// Hello, embedded V playground!
+println("Hello, world 2!")
+`)
+</script>
+</html>

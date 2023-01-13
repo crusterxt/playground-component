@@ -1,0 +1,242 @@
+/* File WIP, for future cases */
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+.v-playground[data-theme='light'] {
+    --background-color: #fff;
+    --text-color: #000;
+    --header-background-color: #f7f8fa;
+    --header-border: #ecedf1;
+    --header-button-hover: #ecedf1;
+    --configuration-item-hover: #cfdefd;
+    --scrollbar-thumb-color: #d2d2d2;
+    --terminal-header-border: #ecedf1;
+    --terminal-header: #f7f8fa;
+    --terminal-header-text: #000;
+    --terminal-close-button: #777b88;
+    --terminal-close-button-hover: #ecedf1;
+    --terminal-text: #000;
+    --terminal-background: #fff;
+    --terminal-ok: #26ad2c;
+    --terminal-error: #c02929;
+    --playground-link: #4f4f4f;
+    --run-embeded-icon-color: #000000;
+
+    --completion-variant-background: #cfdefd;
+    --completion-variant-color: #000;
+    --completion-module-icon: url("../../images/module-light.svg");
+    --completion-type-icon: url("../../images/type-light.svg");
+}
+
+.v-playground[data-theme='dark'] {
+    --background-color: #1e1f22;
+    --text-color: #e0e0e0;
+    --header-background-color: #2a2a2d;
+    --header-border: #2a2a2d;
+    --header-button-hover: #393b41;
+    --configuration-item-hover: #2f446e;
+    --scrollbar-thumb-color: #404042;
+    --terminal-header-border: #323438;
+    --terminal-header: #2a2a2d;
+    --terminal-header-text: #f7f8fa;
+    --terminal-close-button: #d9dbe2;
+    --terminal-close-button-hover: #393b41;
+    --terminal-text: #BBBBBB;
+    --terminal-background: #000;
+    --terminal-ok: #43c449;
+    --terminal-error: #e04949;
+    --playground-link: #8d8d8d;
+    --run-embeded-icon-color: #fff;
+
+    --completion-variant-background: #2e436e;
+    --completion-variant-color: #b4b8c0;
+    --completion-module-icon: url("../../images/module.svg");
+    --completion-type-icon: url("../../images/type.svg");
+}
+
+
+html {
+    --font-size: 12px
+}
+
+body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+}
+
+.v-playground {
+    position: relative;
+    min-height: 100px;
+    height: 200px;
+
+    border: 1px solid var(--terminal-header-border);
+}
+
+.v-playground.closed-terminal {
+    grid-template-rows: 100%;
+}
+
+.v-playground.closed-terminal .playground__terminal {
+    display: none;
+}
+
+.v-playground .playground__editor {
+    position: relative;
+
+    display: grid;
+    grid-template-rows: 70% 30%;
+    height: 100%;
+}
+
+.v-playground.closed-terminal .playground__editor {
+    grid-template-rows: 100%;
+}
+
+.run-style-button {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+
+    z-index: 100;
+}
+
+.run-style-button .icon .run-icon {
+    fill: var(--run-embeded-icon-color);
+}
+
+.CodeMirror {
+    width: 100%;
+    height: 100%;
+
+    font-family: "JetBrains Mono", "Fira Mono", JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo, monospace;
+    font-size: var(--font-size) !important;
+    line-height: 1.57;
+}
+
+.CodeMirror {
+    background-color: var(--background-color);
+}
+
+.CodeMirror-scroll {
+    /*padding: 0;*/
+}
+
+.CodeMirror-line {
+    padding-left: 15px !important;
+}
+
+.CodeMirror-gutters {
+    padding-left: 5px;
+}
+
+.CodeMirror-linenumbers {
+}
+
+.CodeMirror-linenumber {
+    font-size: 0.9em;
+}
+
+.playground__terminal {
+    position: relative;
+
+    height: 100%;
+    display: grid;
+    grid-template-rows: max-content auto;
+}
+
+.playground__terminal.closed {
+    display: none;
+}
+
+.playground__terminal .header {
+    display: grid;
+    grid-template-columns: auto max-content;
+
+    height: 22px;
+
+    color: var(--terminal-header-text);
+    border-top: 1px solid var(--terminal-header-border);
+    border-bottom: 1px solid var(--terminal-header-border);
+    background-color: var(--terminal-header);
+}
+
+.playground__terminal .terminal__close-button {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    padding: 2px 3px 0;
+    border-radius: 5px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.playground__terminal .terminal__close-button svg {
+    height: 12px;
+}
+
+.playground__terminal .terminal__close-button .close-terminal-button-rect {
+    fill: var(--terminal-close-button);
+}
+
+.playground__terminal .terminal__close-button:hover {
+    background-color: var(--terminal-close-button-hover);
+}
+
+.playground__terminal .terminal__output {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: scroll;
+
+    padding: 5px 5px 5px 10px;
+
+    font-family: "JetBrains Mono", "Fira Mono", JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo, monospace;
+    font-size: var(--font-size);
+    line-height: 1.57;
+
+    background-color: var(--terminal-background);
+    color: var(--terminal-text);
+}
+
+.playground-link {
+    height: 30px;
+    margin-top: 5px;
+    color: var(--playground-link);
+    font-size: 11px;
+}
+
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+    border-radius: 5px;
+    margin: 5px;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: var(--background-color);
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: var(--background-color);
+}

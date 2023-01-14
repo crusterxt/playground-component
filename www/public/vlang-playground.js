@@ -952,43 +952,49 @@ println('Hello, Playground!')
 </svg>
 `;
   var template = `<div class="js-playground v-playground">
-  <div class="playground__editor">
-    <div class="js-playground__action-show-all show-all-button">
-        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="8.5" y1="2" x2="8.5" y2="15" stroke="black"/>
-            <line x1="15" y1="8.5" x2="2" y2="8.5" stroke="black"/>
-        </svg>
-    </div>
-    <div class="js-playground__action-run run-style-button">
-      <div class="icon">
-        <svg class="run-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g clip-path="url(#clip0_14_12)">
-            <path d="M14.0548 8.75068L3.25542 14.9857C2.92209 15.1782 2.50542 14.9376 2.50542 14.5527L2.50542 2.08263C2.50542 1.69774 2.92208 1.45717 3.25542 1.64962L14.0548 7.88465C14.3881 8.0771 14.3881 8.55823 14.0548 8.75068Z"
-                  fill="#659360" fill-opacity="0.2" stroke="#659360"/>
-          </g>
-          <defs>
-            <clipPath id="clip0_14_12">
-              <rect width="16" height="16" fill="white"/>
-            </clipPath>
-          </defs>
-        </svg>
+  <div class="playground__wrapper">
+    <div class="playground__editor">
+      <div class="js-playground__action-show-all show-all-button">
+          <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8.5" y1="2" x2="8.5" y2="15" stroke="black"/>
+              <line x1="15" y1="8.5" x2="2" y2="8.5" stroke="black"/>
+          </svg>
       </div>
+      <div class="js-playground__action-run run-style-button">
+        <div class="icon">
+          <svg class="run-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g clip-path="url(#clip0_14_12)">
+              <path d="M14.0548 8.75068L3.25542 14.9857C2.92209 15.1782 2.50542 14.9376 2.50542 14.5527L2.50542 2.08263C2.50542 1.69774 2.92208 1.45717 3.25542 1.64962L14.0548 7.88465C14.3881 8.0771 14.3881 8.55823 14.0548 8.75068Z"
+                    fill="#659360" fill-opacity="0.2" stroke="#659360"/>
+            </g>
+            <defs>
+              <clipPath id="clip0_14_12">
+                <rect width="16" height="16" fill="white"/>
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Place for CodeMirror editor -->
+      <textarea></textarea>
     </div>
     
-    <!-- Place for CodeMirror editor -->
-    <textarea></textarea>
+    <div class="js-terminal playground__terminal">
+      <div class="header">
+        <button class="js-terminal__close-buttom terminal__close-button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect class="close-terminal-button-rect" x="1" y="8" width="13" height="1"/>
+          </svg>
+        </button>
+      </div>
+      <pre class="js-terminal__output terminal__output"></pre>
+    </div>
   </div>
   
-  <div class="js-terminal playground__terminal">
-    <div class="header">
-      <button class="js-terminal__close-buttom terminal__close-button">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect class="close-terminal-button-rect" x="1" y="8" width="13" height="1"/>
-        </svg>
-      </button>
+  <div class="js-playground__footer playground__footer">
+    <a href="#" class="js-playground-link playground-link">Playground \u2192</a>
     </div>
-    <pre class="js-terminal__output terminal__output"></pre>
-  </div>
 </div>
 `;
 
@@ -1089,16 +1095,22 @@ println('Hello, Playground!')
       this.registerAction("show-all", () => {
         var _a2;
         this.editor.toggleSnippet();
-        const actionButton = this.getActionElement("show-all");
+        const showAllActionButton = this.getActionElement("show-all");
         if (((_a2 = this.editor.snippet) == null ? void 0 : _a2.state) === 0 /* Folded */) {
-          actionButton.innerHTML = expandSnippetIcons;
+          showAllActionButton.innerHTML = expandSnippetIcons;
         } else {
-          actionButton.innerHTML = collapseSnippetIcons;
+          showAllActionButton.innerHTML = collapseSnippetIcons;
         }
       });
-      const runActionButton = this.getActionElement("run" /* RUN */);
+      if (config.showFoldedCodeButton === false) {
+        const showAllActionButton = this.getActionElement("show-all");
+        showAllActionButton.style.display = "none";
+      }
       if (config.highlightOnly) {
+        const runActionButton = this.getActionElement("run" /* RUN */);
         runActionButton.style.display = "none";
+        const footer = this.playgroundElement.querySelector(".js-playground__footer");
+        footer.style.display = "none";
       }
     }
     mount(element) {
@@ -1169,15 +1181,18 @@ println('Hello, Playground!')
   var selector = currentScript == null ? void 0 : currentScript.getAttribute("data-selector");
   var globalFontSize = currentScript == null ? void 0 : currentScript.getAttribute("data-font-size");
   var globalHighlightOnly = currentScript == null ? void 0 : currentScript.getAttribute("data-highlight-only");
+  var globalShowFoldedCodeButton = currentScript == null ? void 0 : currentScript.getAttribute("data-show-folded-code-button");
   if (selector) {
     window.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(selector).forEach((element) => {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f;
         const fontSize = (_b = (_a = element.getAttribute("data-font-size")) != null ? _a : globalFontSize) != null ? _b : "12px";
-        const highlightOnly = (_d = (_c = element.getAttribute("data-highlight-only")) != null ? _c : globalHighlightOnly) != null ? _d : "true";
+        const highlightOnly = (_d = (_c = element.getAttribute("data-highlight-only")) != null ? _c : globalHighlightOnly) != null ? _d : "false";
+        const showFoldedCodeButton = (_f = (_e = element == null ? void 0 : element.getAttribute("data-show-folded-code-button")) != null ? _e : globalShowFoldedCodeButton) != null ? _f : "true";
         const playground = new Playground({
           element,
-          highlightOnly: highlightOnly == "true"
+          highlightOnly: highlightOnly == "true",
+          showFoldedCodeButton: showFoldedCodeButton == "true"
         });
         playground.setEditorFontSize(fontSize);
       });

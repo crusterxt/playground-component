@@ -25,7 +25,7 @@
     --terminal-background: #fff;
     --terminal-ok: #26ad2c;
     --terminal-error: #c02929;
-    --playground-link: #4f4f4f;
+    --playground-link: #7e7d7d;
     --run-embeded-icon-color: #000000;
 
     --completion-variant-background: #cfdefd;
@@ -51,7 +51,7 @@
     --terminal-background: #000;
     --terminal-ok: #43c449;
     --terminal-error: #e04949;
-    --playground-link: #8d8d8d;
+    --playground-link: #b9b9b9;
     --run-embeded-icon-color: #fff;
 
     --completion-variant-background: #2e436e;
@@ -71,11 +71,15 @@ body {
 
 .v-playground {
     position: relative;
-    border: 1px solid var(--terminal-header-border);
+    background-color: var(--background-color);
 }
 
 .v-playground.closed-terminal .playground__terminal {
     display: none;
+}
+
+.v-playground .playground__wrapper {
+    border: 1px solid var(--terminal-header-border);
 }
 
 .v-playground .playground__editor {
@@ -238,13 +242,21 @@ body {
     color: var(--terminal-text);
 }
 
-.playground-link {
-    height: 30px;
-    margin-top: 5px;
-    color: var(--playground-link);
-    font-size: 11px;
+.playground__footer {
+    padding: 2px 10px 5px;
 }
 
+.playground-link {
+    height: 30px;
+    color: var(--playground-link);
+    font-size: 11px;
+    margin: 0;
+    text-decoration: none;
+}
+
+.playground-link:hover {
+    text-decoration: underline;
+}
 
 ::-webkit-scrollbar {
     width: 8px;

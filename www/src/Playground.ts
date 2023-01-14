@@ -18,6 +18,7 @@ export interface PlaygroundConfig {
     element?: HTMLElement
     fontSize?: string
     highlightOnly?: boolean
+    showFoldedCodeButton?: boolean
 }
 
 /**
@@ -65,18 +66,25 @@ export class Playground {
         this.registerAction("show-all", () => {
             this.editor.toggleSnippet()
 
-            const actionButton = this.getActionElement("show-all")
+            const showAllActionButton = this.getActionElement("show-all")
             if (this.editor.snippet?.state === SnippetState.Folded) {
-                actionButton.innerHTML = expandSnippetIcons
+                showAllActionButton.innerHTML = expandSnippetIcons
             } else {
-                actionButton.innerHTML = collapseSnippetIcons
+                showAllActionButton.innerHTML = collapseSnippetIcons
             }
         })
 
-        const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
+        if (config.showFoldedCodeButton === false) {
+            const showAllActionButton = this.getActionElement("show-all")
+            showAllActionButton.style.display = "none"
+        }
 
         if (config.highlightOnly) {
+            const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
             runActionButton.style.display = "none"
+
+            const footer = this.playgroundElement.querySelector(".js-playground__footer") as HTMLElement
+            footer.style.display = "none"
         }
     }
 

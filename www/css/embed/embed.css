@@ -72,6 +72,11 @@ body {
 .v-playground {
     position: relative;
     background-color: var(--background-color);
+
+    height: 100%;
+
+    display: grid;
+    grid-template-rows: 1fr 27px;
 }
 
 .v-playground.closed-terminal .playground__terminal {
@@ -279,4 +284,12 @@ body {
 
 ::-webkit-scrollbar-track-piece {
     background-color: var(--background-color);
+}
+
+.terminal__output::-webkit-scrollbar-corner {
+    background-color: var(--terminal-background);
+}
+
+.terminal__output::-webkit-scrollbar-track-piece {
+    background-color: var(--terminal-background);
 }

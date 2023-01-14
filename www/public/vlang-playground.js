@@ -630,7 +630,6 @@ println('Hello, Playground!')
       this.onWrite = null;
       this.filters = [];
       this.element = element;
-      this.attachResizeHandler(element);
     }
     registerCloseHandler(handler) {
       this.onClose = handler;
@@ -664,33 +663,115 @@ println('Hello, Playground!')
     getTerminalOutputElement() {
       return this.element.querySelector(".js-terminal__output");
     }
-    attachResizeHandler(element) {
-      const header = element.querySelector(".header");
-      if (!header)
-        return;
-      let mouseDown = false;
-      header.addEventListener("mousedown", () => {
-        mouseDown = true;
-        document.body.classList.add("dragging");
-      });
-      document.addEventListener("mousemove", (e) => {
-        if (!mouseDown)
-          return;
-        element.style.height = `${document.body.clientHeight - e.clientY + header.clientHeight / 2}px`;
-      });
-      document.addEventListener("mouseup", () => {
-        mouseDown = false;
-        document.body.classList.remove("dragging");
-      });
+  };
+
+  // src/Snippet.ts
+  var Snippet = class {
+    constructor(code) {
+      this.state = 0 /* Folded */;
+      const normalizedCode = this.normalizeCode(code);
+      this.range = this.getSnippetRange(normalizedCode);
+      const parts = this.separateCodeBySnippetRange(code, this.range);
+      this.original = this.removeRangeMarkers(normalizedCode);
+      this.prefix = parts.prefix;
+      this.foldedCode = this.normalizeCode(parts.code);
+      this.suffix = parts.suffix;
+    }
+    countLines() {
+      return this.code().split("\n").length;
+    }
+    code() {
+      if (this.state == 1 /* Unfolded */) {
+        return this.original;
+      }
+      return this.foldedCode;
+    }
+    toggle() {
+      if (this.state == 0 /* Folded */) {
+        this.state = 1 /* Unfolded */;
+      } else {
+        this.state = 0 /* Folded */;
+      }
+    }
+    getSnippetRange(code) {
+      const lines = code.split("\n");
+      const startLine = lines.findIndex((line) => line.trim().startsWith("//code::start"));
+      const endLine = lines.findIndex((line) => line.trim().startsWith("//code::end"));
+      return {
+        start: startLine,
+        end: endLine
+      };
+    }
+    separateCodeBySnippetRange(code, range) {
+      if (range.start == -1 && range.end == -1) {
+        return {
+          prefix: "",
+          code,
+          suffix: ""
+        };
+      }
+      const lines = code.split("\n");
+      const prefix = lines.slice(0, range.start + 1).join("\n");
+      const codeSnippet = lines.slice(range.start + 2, range.end + 1).join("\n");
+      const suffix = lines.slice(range.end + 3).join("\n");
+      return {
+        prefix,
+        code: codeSnippet,
+        suffix
+      };
+    }
+    lineIndent(line) {
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] !== " ") {
+          return i;
+        }
+      }
+      return Number.MAX_VALUE;
+    }
+    // code:
+    // ```
+    //     fn foo() {
+    //       println!("Hello, world!");
+    //     }
+    // ```
+    // output:
+    // ```
+    // fn foo() {
+    //   println!("Hello, world!");
+    // }
+    // ```
+    normalizeCode(code) {
+      const lines = code.split("\n");
+      const indents = lines.map((line) => this.lineIndent(line));
+      const minIndent = Math.min(...indents);
+      const trimmed = lines.map((line) => line.substring(minIndent));
+      if (trimmed.length > 1) {
+        const first = trimmed[0];
+        const last = trimmed[trimmed.length - 1];
+        if (first.trim().length == 0) {
+          trimmed.shift();
+        }
+        if (last.trim().length == 0) {
+          trimmed.pop();
+        }
+      }
+      return trimmed.join("\n");
+    }
+    removeRangeMarkers(code) {
+      const lines = code.split("\n");
+      const filtered = lines.filter((line) => !line.trim().startsWith("//code::"));
+      return filtered.join("\n");
     }
   };
 
   // src/Editor/Editor.ts
-  var _Editor = class {
-    constructor(wrapper, repository) {
+  var Editor = class {
+    constructor(wrapper, repository, readonly) {
+      this.snippet = null;
       const editorConfig = {
         mode: "v",
         lineNumbers: true,
+        // @ts-ignore
         matchBrackets: true,
         extraKeys: {
           "Ctrl-Space": "autocomplete",
@@ -709,7 +790,8 @@ println('Hello, Playground!')
           indent: true,
           padding: " "
         },
-        theme: "dark"
+        theme: "dark",
+        readOnly: readonly ? "nocursor" : false
       };
       this.wrapperElement = wrapper;
       const place = wrapper.querySelector("textarea");
@@ -720,7 +802,8 @@ println('Hello, Playground!')
           this.terminal.write("Code for shared link not found.");
           return;
         }
-        this.setCode(code);
+        this.snippet = new Snippet(code);
+        this.setCode(this.snippet.code());
       });
       const terminalElement = wrapper.querySelector(".js-terminal");
       if (terminalElement === null || terminalElement === void 0) {
@@ -738,28 +821,15 @@ println('Hello, Playground!')
         return !line.trim().startsWith("Failed command");
       });
       this.terminal.mount();
-      this.initFont();
       this.closeTerminal();
     }
-    initFont() {
-      const fontSize = window.localStorage.getItem(_Editor.FONT_LOCAL_STORAGE_KEY);
-      if (fontSize !== null) {
-        this.setEditorFontSize(fontSize);
-      }
-    }
-    changeEditorFontSize(delta) {
-      const cm = document.getElementsByClassName("CodeMirror")[0];
-      const fontSize = window.getComputedStyle(cm, null).getPropertyValue("font-size");
-      if (fontSize) {
-        const newFontSize = parseInt(fontSize) + delta;
-        cm.style.fontSize = newFontSize + "px";
-        window.localStorage.setItem(_Editor.FONT_LOCAL_STORAGE_KEY, newFontSize.toString());
-        this.editor.refresh();
-      }
-    }
     setEditorFontSize(size) {
-      const cm = document.getElementsByClassName("CodeMirror")[0];
-      cm.style.fontSize = size + "px";
+      const cm = this.wrapperElement.querySelector(".CodeMirror");
+      let normalizedSize = size;
+      if (normalizedSize.endsWith("px")) {
+        normalizedSize = normalizedSize.slice(0, -2);
+      }
+      cm.style.fontSize = normalizedSize + "px";
       this.refresh();
     }
     setCode(code, preserveCursor = false) {
@@ -780,6 +850,42 @@ println('Hello, Playground!')
       }
       this.repository.saveCode(this.getCode());
     }
+    toggleSnippet() {
+      if (this.snippet === null) {
+        return;
+      }
+      this.snippet.toggle();
+      this.setCode(this.snippet.code());
+      if (this.snippet.state == 1 /* Unfolded */) {
+        this.editor.markText(
+          { line: 0, ch: 0 },
+          { line: this.snippet.range.start, ch: 0 },
+          {
+            readOnly: true,
+            inclusiveLeft: true,
+            inclusiveRight: false
+          }
+        );
+        this.editor.markText(
+          { line: this.snippet.range.end + 2, ch: 0 },
+          { line: this.snippet.countLines(), ch: 0 },
+          {
+            readOnly: true,
+            inclusiveLeft: true,
+            inclusiveRight: false
+          }
+        );
+        this.editor.operation(() => {
+          for (let i = 0; i < this.snippet.range.start; i++) {
+            this.editor.addLineClass(i, "background", "unmodifiable-line");
+          }
+          for (let i = this.snippet.range.end + 2; i < this.snippet.countLines(); i++) {
+            this.editor.addLineClass(i, "background", "unmodifiable-line");
+          }
+        });
+      }
+      this.refresh();
+    }
     openTerminal() {
       this.wrapperElement.classList.remove("closed-terminal");
     }
@@ -796,8 +902,6 @@ println('Hello, Playground!')
       this.editor.refresh();
     }
   };
-  var Editor = _Editor;
-  Editor.FONT_LOCAL_STORAGE_KEY = "editor-font-size";
 
   // src/CodeRunner/CodeRunner.ts
   var RunCodeResult = class {
@@ -835,8 +939,26 @@ println('Hello, Playground!')
   };
 
   // src/template.ts
+  var expandSnippetIcons = `
+<svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="8.5" y1="2" x2="8.5" y2="15" stroke="black"/>
+    <line x1="15" y1="8.5" x2="2" y2="8.5" stroke="black"/>
+</svg>
+`;
+  var collapseSnippetIcons = `
+<svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="3.90385" y1="3.9038" x2="13.0962" y2="13.0962" stroke="black"/>
+    <line x1="13.0962" y1="3.90382" x2="3.90384" y2="13.0962" stroke="black"/>
+</svg>
+`;
   var template = `<div class="js-playground v-playground">
   <div class="playground__editor">
+    <div class="js-playground__action-show-all show-all-button">
+        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="8.5" y1="2" x2="8.5" y2="15" stroke="black"/>
+            <line x1="15" y1="8.5" x2="2" y2="8.5" stroke="black"/>
+        </svg>
+    </div>
     <div class="js-playground__action-run run-style-button">
       <div class="icon">
         <svg class="run-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -852,19 +974,20 @@ println('Hello, Playground!')
         </svg>
       </div>
     </div>
+    
     <!-- Place for CodeMirror editor -->
     <textarea></textarea>
-
-    <div class="js-terminal playground__terminal">
-      <div class="header">
-        <button class="js-terminal__close-buttom terminal__close-button">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect class="close-terminal-button-rect" x="1" y="8" width="13" height="1"/>
-          </svg>
-        </button>
-      </div>
-      <pre class="js-terminal__output terminal__output"></pre>
+  </div>
+  
+  <div class="js-terminal playground__terminal">
+    <div class="header">
+      <button class="js-terminal__close-buttom terminal__close-button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect class="close-terminal-button-rect" x="1" y="8" width="13" height="1"/>
+        </svg>
+      </button>
     </div>
+    <pre class="js-terminal__output terminal__output"></pre>
   </div>
 </div>
 `;
@@ -936,14 +1059,24 @@ println('Hello, Playground!')
 
   // src/Playground.ts
   var Playground = class {
-    constructor(selector, code) {
-      var _a;
-      this.playgroundElement = document.querySelector(selector);
+    constructor(config) {
+      var _a, _b, _c;
+      if (config.selector) {
+        this.playgroundElement = document.querySelector(config.selector);
+      } else if (config.element) {
+        this.playgroundElement = config.element;
+      } else {
+        throw new Error("No selector or element provided");
+      }
+      const code = (_a = this.playgroundElement.textContent) != null ? _a : "";
       this.mount(this.playgroundElement);
-      const theme = (_a = this.playgroundElement.getAttribute("data-theme")) != null ? _a : "dark";
+      const theme = (_b = this.playgroundElement.getAttribute("data-theme")) != null ? _b : "dark";
       this.repository = new TextCodeRepository(code);
       const editorElement = this.playgroundElement.querySelector(".v-playground");
-      this.editor = new Editor(editorElement, this.repository);
+      this.editor = new Editor(editorElement, this.repository, (_c = config.highlightOnly) != null ? _c : false);
+      if (config.fontSize) {
+        this.editor.setEditorFontSize(config.fontSize);
+      }
       this.themeManager = new ThemeManager(ThemeManager.findTheme(theme));
       this.themeManager.registerOnChange((theme2) => {
         this.editor.setTheme(theme2);
@@ -953,6 +1086,20 @@ println('Hello, Playground!')
       this.registerAction("run" /* RUN */, () => {
         this.run();
       });
+      this.registerAction("show-all", () => {
+        var _a2;
+        this.editor.toggleSnippet();
+        const actionButton = this.getActionElement("show-all");
+        if (((_a2 = this.editor.snippet) == null ? void 0 : _a2.state) === 0 /* Folded */) {
+          actionButton.innerHTML = expandSnippetIcons;
+        } else {
+          actionButton.innerHTML = collapseSnippetIcons;
+        }
+      });
+      const runActionButton = this.getActionElement("run" /* RUN */);
+      if (config.highlightOnly) {
+        runActionButton.style.display = "none";
+      }
     }
     mount(element) {
       if (element === null) {
@@ -971,6 +1118,9 @@ println('Hello, Playground!')
         throw new Error(`Can't find action button with class js-playground__action-${name}`);
       }
       actionButton.addEventListener("click", callback);
+    }
+    getActionElement(name) {
+      return this.playgroundElement.querySelector(`.js-playground__action-${name}`);
     }
     run() {
       this.runCode();
@@ -1009,8 +1159,29 @@ println('Hello, Playground!')
     writeToTerminal(text) {
       this.editor.terminal.write(text);
     }
+    setEditorFontSize(size) {
+      this.editor.setEditorFontSize(size);
+    }
   };
 
   // src/main.ts
+  var currentScript = document.currentScript;
+  var selector = currentScript == null ? void 0 : currentScript.getAttribute("data-selector");
+  var globalFontSize = currentScript == null ? void 0 : currentScript.getAttribute("data-font-size");
+  var globalHighlightOnly = currentScript == null ? void 0 : currentScript.getAttribute("data-highlight-only");
+  if (selector) {
+    window.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(selector).forEach((element) => {
+        var _a, _b, _c, _d;
+        const fontSize = (_b = (_a = element.getAttribute("data-font-size")) != null ? _a : globalFontSize) != null ? _b : "12px";
+        const highlightOnly = (_d = (_c = element.getAttribute("data-highlight-only")) != null ? _c : globalHighlightOnly) != null ? _d : "true";
+        const playground = new Playground({
+          element,
+          highlightOnly: highlightOnly == "true"
+        });
+        playground.setEditorFontSize(fontSize);
+      });
+    });
+  }
   window.Playground = Playground;
 })();

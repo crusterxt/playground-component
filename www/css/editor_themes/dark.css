@@ -61,3 +61,7 @@
 .cm-s-dark .CodeMirror-crosshair { cursor: crosshair; }
 .cm-s-dark .CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background: #d7d4f0; }
 .cm-s-dark .CodeMirror-line::-moz-selection, .CodeMirror-line > span::-moz-selection, .CodeMirror-line > span > span::-moz-selection { background: #d7d4f0; }
+
+.cm-s-dark .CodeMirror-linebackground.unmodifiable-line {
+    background-color: #343434;
+}

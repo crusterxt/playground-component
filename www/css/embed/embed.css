@@ -60,8 +60,7 @@
     --completion-type-icon: url("../../images/type.svg");
 }
 
-
-html {
+.v-playground {
     --font-size: 12px
 }
 
@@ -72,14 +71,7 @@ body {
 
 .v-playground {
     position: relative;
-    min-height: 100px;
-    height: 200px;
-
     border: 1px solid var(--terminal-header-border);
-}
-
-.v-playground.closed-terminal {
-    grid-template-rows: 100%;
 }
 
 .v-playground.closed-terminal .playground__terminal {
@@ -88,14 +80,48 @@ body {
 
 .v-playground .playground__editor {
     position: relative;
-
-    display: grid;
-    grid-template-rows: 70% 30%;
-    height: 100%;
+    padding: 10px 0;
+    /*min-height: 150px;*/
+    background-color: var(--background-color);
 }
 
 .v-playground.closed-terminal .playground__editor {
     grid-template-rows: 100%;
+}
+
+.show-all-button {
+    position: absolute;
+    z-index: 100;
+    left: 50%;
+    top: -9px;
+
+    width: 17px;
+    height: 17px;
+
+    border-radius: 50%;
+    border: 1px solid #d4d4d4;
+    background-color: var(--background-color);
+
+    line-height: 0.8;
+    text-align: center;
+}
+
+.show-all-button svg {
+    width: 13px;
+    margin-top: -1px;
+}
+
+.show-all-button svg line {
+    stroke: #d4d4d4;
+}
+
+.show-all-button:hover {
+    cursor: pointer;
+    border: 1px solid #366ca1;
+}
+
+.show-all-button:hover svg line {
+    stroke: #366ca1;
 }
 
 .run-style-button {
@@ -120,7 +146,7 @@ body {
     height: 100%;
 
     font-family: "JetBrains Mono", "Fira Mono", JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo, monospace;
-    font-size: var(--font-size) !important;
+    font-size: var(--font-size);
     line-height: 1.57;
 }
 
@@ -150,9 +176,11 @@ body {
 .playground__terminal {
     position: relative;
 
-    height: 100%;
+    min-height: 100px;
     display: grid;
     grid-template-rows: max-content auto;
+
+    background-color: var(--terminal-background);
 }
 
 .playground__terminal.closed {

@@ -1,19 +1,21 @@
 import {CodeRepository, LocalCodeRepository, SharedCodeRepository} from "../Repositories"
 import {Terminal} from "../Terminal/Terminal"
 import {ITheme} from "../themes/interface"
+import {Snippet, SnippetState} from "../Snippet"
+import {EditorConfiguration} from "codemirror"
 
 export class Editor {
-    private static readonly FONT_LOCAL_STORAGE_KEY = "editor-font-size"
-
     private wrapperElement: HTMLElement
     private repository: CodeRepository
     public editor: CodeMirror.Editor
     public terminal: Terminal
+    public snippet: Snippet | null = null
 
-    constructor(wrapper: HTMLElement, repository: CodeRepository) {
-        const editorConfig = {
+    constructor(wrapper: HTMLElement, repository: CodeRepository, readonly: boolean) {
+        const editorConfig: EditorConfiguration = {
             mode: "v",
             lineNumbers: true,
+            // @ts-ignore
             matchBrackets: true,
             extraKeys: {
                 "Ctrl-Space": "autocomplete",
@@ -33,6 +35,7 @@ export class Editor {
                 padding: " ",
             },
             theme: "dark",
+            readOnly: readonly ? "nocursor" : false,
         }
 
         this.wrapperElement = wrapper
@@ -48,7 +51,8 @@ export class Editor {
                 return
             }
 
-            this.setCode(code)
+            this.snippet = new Snippet(code)
+            this.setCode(this.snippet.code())
         })
 
         const terminalElement = wrapper.querySelector(".js-terminal") as HTMLElement
@@ -64,36 +68,20 @@ export class Editor {
             this.openTerminal()
         })
         this.terminal.registerFilter((line) => {
-            return !line.trim().startsWith('Failed command')
+            return !line.trim().startsWith("Failed command")
         })
         this.terminal.mount()
-
-        this.initFont()
 
         this.closeTerminal()
     }
 
-    private initFont() {
-        const fontSize = window.localStorage.getItem(Editor.FONT_LOCAL_STORAGE_KEY)
-        if (fontSize !== null) {
-            this.setEditorFontSize(fontSize)
+    public setEditorFontSize(size: string) {
+        const cm = this.wrapperElement.querySelector(".CodeMirror") as HTMLElement
+        let normalizedSize = size
+        if (normalizedSize.endsWith("px")) {
+            normalizedSize = normalizedSize.slice(0, -2)
         }
-    }
-
-    changeEditorFontSize(delta: number) {
-        const cm = document.getElementsByClassName("CodeMirror")[0] as HTMLElement
-        const fontSize = window.getComputedStyle(cm, null).getPropertyValue("font-size")
-        if (fontSize) {
-            const newFontSize = parseInt(fontSize) + delta
-            cm.style.fontSize = newFontSize + "px"
-            window.localStorage.setItem(Editor.FONT_LOCAL_STORAGE_KEY, newFontSize.toString())
-            this.editor.refresh()
-        }
-    }
-
-    private setEditorFontSize(size: string) {
-        const cm = document.getElementsByClassName("CodeMirror")[0] as HTMLElement
-        cm.style.fontSize = size + "px"
+        cm.style.fontSize = normalizedSize + "px"
         this.refresh()
     }
 
@@ -121,6 +109,49 @@ export class Editor {
         this.repository.saveCode(this.getCode())
     }
 
+    public toggleSnippet() {
+        if (this.snippet === null) {
+            return
+        }
+
+        this.snippet.toggle()
+        this.setCode(this.snippet.code())
+
+        if (this.snippet.state == SnippetState.Unfolded) {
+            this.editor.markText(
+                {line: 0, ch: 0},
+                {line: this.snippet.range.start, ch: 0},
+                {
+                    readOnly: true,
+                    inclusiveLeft: true,
+                    inclusiveRight: false,
+                },
+            )
+
+            this.editor.markText(
+                {line: this.snippet.range.end + 2, ch: 0},
+                {line: this.snippet.countLines(), ch: 0},
+                {
+                    readOnly: true,
+                    inclusiveLeft: true,
+                    inclusiveRight: false,
+                },
+            )
+
+            this.editor.operation(() => {
+                for (let i = 0; i < this.snippet!.range.start; i++) {
+                    this.editor.addLineClass(i, "background", "unmodifiable-line")
+                }
+
+                for (let i = this.snippet!.range.end + 2; i < this.snippet!.countLines(); i++) {
+                    this.editor.addLineClass(i, "background", "unmodifiable-line")
+                }
+            })
+        }
+
+        this.refresh()
+    }
+
     public openTerminal() {
         this.wrapperElement.classList.remove("closed-terminal")
     }
@@ -134,7 +165,7 @@ export class Editor {
     }
 
     public showCompletion() {
-       this.editor.execCommand("autocomplete")
+        this.editor.execCommand("autocomplete")
     }
 
     public refresh() {

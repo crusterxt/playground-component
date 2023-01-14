@@ -75,32 +75,94 @@
 <article>
     <h1>V Embedded Playground</h1>
 
-    <p>
-        Add next JS code:
-    </p>
-    <pre><code class="hljs language-javascript">const playground = new Playground('.vlang-code', `
-// Hello, embedded V playground!
-println("Hello, world!")
-`)</code></pre>
+    <p>Add next HTML:</p>
 
-    <p>and HTML:</p>
+    <pre><code class="hljs language-html">&lt;script src="./vlang-playground.js" data-selector=".vlang-code">&lt;/script>
 
-    <pre><code class="hljs language-html">&lt;div class="vlang-code" data-theme="light">&lt;/div></code></pre>
+&lt;div class="vlang-code" data-theme="light">
+        fn fib(n int) u64 {
+            //code::start
+            mut f := []u64{len: n + 2}
+            f[0] = 0
+            f[1] = 1
+
+            for i := 2; i <= n; i++ {
+                f[i] = f[i - 1] + f[i - 2]
+            }
+            //code::end
+
+            return f[n]
+        }
+
+        fn main() {
+            for i in 0 .. 30 {
+                println(fib(i))
+            }
+        }
+&lt;/div></code></pre>
 
     <p>and you will get:</p>
 
-    <div class="vlang-code" data-theme="light"></div>
+    <div class="vlang-code" data-theme="dark" data-font-size="14px" data-highlight-only="false">
+        fn fib(n int) u64 {
+            //code::start
+            mut f := []u64{len: n + 2}
+            f[0] = 0
+            f[1] = 1
+
+            for i := 2; i <= n; i++ {
+                f[i] = f[i - 1] + f[i - 2]
+            }
+            //code::end
+
+            return f[n]
+        }
+
+        fn main() {
+            for i in 0 .. 30 {
+                println(fib(i))
+            }
+        }
+    </div>
+
+    <br>
+    <br>
+
+    <p>Write code to sum two numbers</p>
+
+    <div class="vlang-code" data-theme="light" data-highlight-only="true">
+        fn test_add() {
+            assert add(1, 2) == 3
+            assert add(2, 2) == 4
+        }
+
+        //code::start
+        fn add(a int, b int) int {
+            // code here
+        }
+        //code::end
+    </div>
+
+<!--    <p>-->
+<!--        To use dark theme, add-->
+<!--        <code class="hljs language-html inline">data-theme="dark"</code>-->
+<!--        to-->
+<!--        <code class="hljs language-html inline">&lt;div class="vlang-code"></code>:-->
+<!--    </p>-->
+
+<!--    <div class="vlang-code" data-theme="dark">-->
+<!--        // Hello, embedded V playground!-->
+<!--        println("Hello, world 2!")-->
+<!--    </div>-->
 
     <p>
-        To use dark theme, add
-        <code class="hljs language-html inline">data-theme="dark"</code>
-        to
-        <code class="hljs language-html inline">&lt;div class="vlang-code"></code>:
-    </p>
-
-    <div class="vlang-code-2"></div>
-
-    <p>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
         <br>
         <br>
         <br>
@@ -120,20 +182,10 @@ println("Hello, world!")
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script>
 
+<script src="./vlang-playground.js" data-selector=".vlang-code" data-font-size="14px" data-highlight-only="true"></script>
+
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script src="javascript.min.js"></script>
 <script>hljs.highlightAll();</script>
 
-<script src="./vlang-playground.js"></script>
-<script>
-    const playground = new Playground('.vlang-code', `
-// Hello, embedded V playground!
-println("Hello, world!")
-`)
-
-    const playground2 = new Playground('.vlang-code-2', `
-// Hello, embedded V playground!
-println("Hello, world 2!")
-`)
-</script>
 </html>

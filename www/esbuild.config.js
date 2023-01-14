@@ -21,10 +21,10 @@ const styleResult = esbuild.build({
   },
   watch: {
     onRebuild(error, result) {
-      if (error) console.error('watch build failed:', error)
-      else {
+      if (error) {
+        console.error('watch build failed:', error)
+      } else {
         console.log('watch build succeeded:', result)
-        // HERE: somehow restart the server from here, e.g., by sending a signal that you trap and react to inside the server.
       }
     },
   },
@@ -44,10 +44,10 @@ const codeResult = esbuild.build({
   entryPoints: ["./src/main.ts"],
   watch: {
     onRebuild(error, result) {
-      if (error) console.error('watch build failed:', error)
-      else {
+      if (error) {
+        console.error('watch build failed:', error)
+      } else {
         console.log('watch build succeeded:', result)
-        // HERE: somehow restart the server from here, e.g., by sending a signal that you trap and react to inside the server.
       }
     },
   },

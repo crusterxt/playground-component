@@ -1,15 +1,23 @@
-import {CodeRepository, SharedCodeRepository, TextCodeRepository} from "./Repositories"
+import {CodeRepository, TextCodeRepository} from "./Repositories"
 
 import {Editor} from "./Editor/Editor"
 import {CodeRunner} from "./CodeRunner/CodeRunner"
-import {template} from "./template"
+import {collapseSnippetIcons, expandSnippetIcons, template} from "./template"
 import {ThemeManager} from "./ThemeManager/ThemeManager"
+import {SnippetState} from "./Snippet"
 
 /**
  * PlaygroundDefaultAction describes the default action of a playground.
  */
 export enum PlaygroundDefaultAction {
     RUN = "run",
+}
+
+export interface PlaygroundConfig {
+    selector?: string
+    element?: HTMLElement
+    fontSize?: string
+    highlightOnly?: boolean
 }
 
 /**
@@ -21,15 +29,27 @@ export class Playground {
     private readonly editor: Editor
     private readonly themeManager: ThemeManager
 
-    constructor(selector: string, code: string) {
-        this.playgroundElement = document.querySelector(selector) as HTMLElement
+    constructor(config: PlaygroundConfig) {
+        if (config.selector) {
+            this.playgroundElement = document.querySelector(config.selector) as HTMLElement
+        } else if (config.element) {
+            this.playgroundElement = config.element
+        } else {
+            throw new Error("No selector or element provided")
+        }
+
+        const code = this.playgroundElement.textContent ?? ""
         this.mount(this.playgroundElement)
 
-        const theme = this.playgroundElement.getAttribute('data-theme') ?? 'dark'
+        const theme = this.playgroundElement.getAttribute("data-theme") ?? "dark"
 
         this.repository = new TextCodeRepository(code)
-        const editorElement = this.playgroundElement.querySelector('.v-playground') as HTMLElement
-        this.editor = new Editor(editorElement, this.repository)
+        const editorElement = this.playgroundElement.querySelector(".v-playground") as HTMLElement
+        this.editor = new Editor(editorElement, this.repository, config.highlightOnly ?? false)
+
+        if (config.fontSize) {
+            this.editor.setEditorFontSize(config.fontSize)
+        }
 
         this.themeManager = new ThemeManager(ThemeManager.findTheme(theme))
         this.themeManager.registerOnChange((theme) => {
@@ -41,6 +61,23 @@ export class Playground {
         this.registerAction(PlaygroundDefaultAction.RUN, () => {
             this.run()
         })
+
+        this.registerAction("show-all", () => {
+            this.editor.toggleSnippet()
+
+            const actionButton = this.getActionElement("show-all")
+            if (this.editor.snippet?.state === SnippetState.Folded) {
+                actionButton.innerHTML = expandSnippetIcons
+            } else {
+                actionButton.innerHTML = collapseSnippetIcons
+            }
+        })
+
+        const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
+
+        if (config.highlightOnly) {
+            runActionButton.style.display = "none"
+        }
     }
 
     private mount(element: HTMLElement) {
@@ -62,6 +99,10 @@ export class Playground {
         }
 
         actionButton.addEventListener("click", callback)
+    }
+
+    public getActionElement(name: PlaygroundDefaultAction | string): HTMLElement {
+        return this.playgroundElement.querySelector(`.js-playground__action-${name}`) as HTMLElement
     }
 
     public run(): void {
@@ -108,5 +149,9 @@ export class Playground {
 
     public writeToTerminal(text: string): void {
         this.editor.terminal.write(text)
+    }
+
+    public setEditorFontSize(size: string) {
+        this.editor.setEditorFontSize(size)
     }
 }

@@ -16,9 +16,13 @@ export enum PlaygroundDefaultAction {
 export interface PlaygroundConfig {
     selector?: string
     element?: HTMLElement
+    configuration?: string
     fontSize?: string
+    showLineNumbers?: boolean
     highlightOnly?: boolean
     showFoldedCodeButton?: boolean
+    showFooter?: boolean
+    customRunButton?: string
 }
 
 /**
@@ -29,6 +33,7 @@ export class Playground {
     private readonly repository: CodeRepository
     private readonly editor: Editor
     private readonly themeManager: ThemeManager
+    private readonly runAsTests: boolean
 
     constructor(config: PlaygroundConfig) {
         if (config.selector) {
@@ -44,9 +49,10 @@ export class Playground {
 
         const theme = this.playgroundElement.getAttribute("data-theme") ?? "dark"
 
+        this.runAsTests = config.configuration === "tests"
         this.repository = new TextCodeRepository(code)
         const editorElement = this.playgroundElement.querySelector(".v-playground") as HTMLElement
-        this.editor = new Editor(editorElement, this.repository, config.highlightOnly ?? false)
+        this.editor = new Editor(editorElement, this.repository, config.highlightOnly ?? false, config.showLineNumbers ?? true)
 
         if (config.fontSize) {
             this.editor.setEditorFontSize(config.fontSize)
@@ -59,7 +65,7 @@ export class Playground {
         })
         this.themeManager.loadTheme()
 
-        this.registerAction(PlaygroundDefaultAction.RUN, () => {
+        this.registerRunAction(config.customRunButton, () => {
             this.run()
         })
 
@@ -74,18 +80,40 @@ export class Playground {
             }
         })
 
-        if (config.showFoldedCodeButton === false) {
+        if (config.showFoldedCodeButton === false || this.editor.snippet?.noFolding()) {
             const showAllActionButton = this.getActionElement("show-all")
             showAllActionButton.style.display = "none"
         }
 
-        if (config.highlightOnly) {
+        const footer = this.playgroundElement.querySelector(".js-playground__footer") as HTMLElement
+        if (config.showFooter === false) {
+            footer.style.display = "none"
+            editorElement.classList.add("no-footer")
+        }
+
+        if (config.highlightOnly === true) {
             const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
             runActionButton.style.display = "none"
 
-            const footer = this.playgroundElement.querySelector(".js-playground__footer") as HTMLElement
             footer.style.display = "none"
         }
+    }
+
+    public registerRunAction(customSelector: string | undefined, callback: () => void): void {
+        if (customSelector) {
+            const customButton = document.querySelector(customSelector) as HTMLElement
+            if (customButton === undefined) {
+                throw new Error(`Can't find custom button with selector ${customSelector}`)
+            }
+
+            customButton.addEventListener("click", callback)
+
+            const actionElement = this.getActionElement(PlaygroundDefaultAction.RUN)
+            actionElement.style.display = "none"
+            return
+        }
+
+        this.registerAction(PlaygroundDefaultAction.RUN, callback)
     }
 
     private mount(element: HTMLElement) {
@@ -114,6 +142,10 @@ export class Playground {
     }
 
     public run(): void {
+        if (this.runAsTests) {
+            this.runTests()
+            return
+        }
         this.runCode()
     }
 
@@ -130,6 +162,22 @@ export class Playground {
             .catch(err => {
                 console.log(err)
                 this.writeToTerminal("Can't run code. Please try again.")
+            })
+    }
+
+    public runTests(): void {
+        this.clearTerminal()
+        this.writeToTerminal("Running tests...")
+
+        const code = this.editor.getCode()
+        CodeRunner.runTest(code)
+            .then(result => {
+                this.clearTerminal()
+                this.writeToTerminal(result.output)
+            })
+            .catch(err => {
+                console.log(err)
+                this.writeToTerminal("Can't run tests. Please try again.")
             })
     }
 

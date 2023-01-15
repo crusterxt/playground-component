@@ -677,6 +677,9 @@ println('Hello, Playground!')
       this.foldedCode = this.normalizeCode(parts.code);
       this.suffix = parts.suffix;
     }
+    noFolding() {
+      return this.range.start == -1 && this.range.end == -1;
+    }
     countLines() {
       return this.code().split("\n").length;
     }
@@ -766,11 +769,11 @@ println('Hello, Playground!')
 
   // src/Editor/Editor.ts
   var Editor = class {
-    constructor(wrapper, repository, readonly) {
+    constructor(wrapper, repository, readonly, showLineNumbers) {
       this.snippet = null;
       const editorConfig = {
         mode: "v",
-        lineNumbers: true,
+        lineNumbers: showLineNumbers,
         // @ts-ignore
         matchBrackets: true,
         extraKeys: {
@@ -1066,7 +1069,7 @@ println('Hello, Playground!')
   // src/Playground.ts
   var Playground = class {
     constructor(config) {
-      var _a, _b, _c;
+      var _a, _b, _c, _d, _e;
       if (config.selector) {
         this.playgroundElement = document.querySelector(config.selector);
       } else if (config.element) {
@@ -1077,9 +1080,10 @@ println('Hello, Playground!')
       const code = (_a = this.playgroundElement.textContent) != null ? _a : "";
       this.mount(this.playgroundElement);
       const theme = (_b = this.playgroundElement.getAttribute("data-theme")) != null ? _b : "dark";
+      this.runAsTests = config.configuration === "tests";
       this.repository = new TextCodeRepository(code);
       const editorElement = this.playgroundElement.querySelector(".v-playground");
-      this.editor = new Editor(editorElement, this.repository, (_c = config.highlightOnly) != null ? _c : false);
+      this.editor = new Editor(editorElement, this.repository, (_c = config.highlightOnly) != null ? _c : false, (_d = config.showLineNumbers) != null ? _d : true);
       if (config.fontSize) {
         this.editor.setEditorFontSize(config.fontSize);
       }
@@ -1089,7 +1093,7 @@ println('Hello, Playground!')
         editorElement == null ? void 0 : editorElement.setAttribute("data-theme", theme2.name());
       });
       this.themeManager.loadTheme();
-      this.registerAction("run" /* RUN */, () => {
+      this.registerRunAction(config.customRunButton, () => {
         this.run();
       });
       this.registerAction("show-all", () => {
@@ -1102,16 +1106,33 @@ println('Hello, Playground!')
           showAllActionButton.innerHTML = collapseSnippetIcons;
         }
       });
-      if (config.showFoldedCodeButton === false) {
+      if (config.showFoldedCodeButton === false || ((_e = this.editor.snippet) == null ? void 0 : _e.noFolding())) {
         const showAllActionButton = this.getActionElement("show-all");
         showAllActionButton.style.display = "none";
       }
-      if (config.highlightOnly) {
+      const footer = this.playgroundElement.querySelector(".js-playground__footer");
+      if (config.showFooter === false) {
+        footer.style.display = "none";
+        editorElement.classList.add("no-footer");
+      }
+      if (config.highlightOnly === true) {
         const runActionButton = this.getActionElement("run" /* RUN */);
         runActionButton.style.display = "none";
-        const footer = this.playgroundElement.querySelector(".js-playground__footer");
         footer.style.display = "none";
       }
+    }
+    registerRunAction(customSelector, callback) {
+      if (customSelector) {
+        const customButton = document.querySelector(customSelector);
+        if (customButton === void 0) {
+          throw new Error(`Can't find custom button with selector ${customSelector}`);
+        }
+        customButton.addEventListener("click", callback);
+        const actionElement = this.getActionElement("run" /* RUN */);
+        actionElement.style.display = "none";
+        return;
+      }
+      this.registerAction("run" /* RUN */, callback);
     }
     mount(element) {
       if (element === null) {
@@ -1135,6 +1156,10 @@ println('Hello, Playground!')
       return this.playgroundElement.querySelector(`.js-playground__action-${name}`);
     }
     run() {
+      if (this.runAsTests) {
+        this.runTests();
+        return;
+      }
       this.runCode();
     }
     runCode() {
@@ -1147,6 +1172,18 @@ println('Hello, Playground!')
       }).catch((err) => {
         console.log(err);
         this.writeToTerminal("Can't run code. Please try again.");
+      });
+    }
+    runTests() {
+      this.clearTerminal();
+      this.writeToTerminal("Running tests...");
+      const code = this.editor.getCode();
+      CodeRunner.runTest(code).then((result) => {
+        this.clearTerminal();
+        this.writeToTerminal(result.output);
+      }).catch((err) => {
+        console.log(err);
+        this.writeToTerminal("Can't run tests. Please try again.");
       });
     }
     setupShortcuts() {
@@ -1179,22 +1216,33 @@ println('Hello, Playground!')
   // src/main.ts
   var currentScript = document.currentScript;
   var selector = currentScript == null ? void 0 : currentScript.getAttribute("data-selector");
+  var globalConfiguration = currentScript == null ? void 0 : currentScript.getAttribute("data-configuration");
   var globalFontSize = currentScript == null ? void 0 : currentScript.getAttribute("data-font-size");
+  var globalShowLineNumbers = currentScript == null ? void 0 : currentScript.getAttribute("data-show-line-numbers");
   var globalHighlightOnly = currentScript == null ? void 0 : currentScript.getAttribute("data-highlight-only");
   var globalShowFoldedCodeButton = currentScript == null ? void 0 : currentScript.getAttribute("data-show-folded-code-button");
+  var globalShowFooter = currentScript == null ? void 0 : currentScript.getAttribute("data-show-footer");
   if (selector) {
     window.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(selector).forEach((element) => {
-        var _a, _b, _c, _d, _e, _f;
-        const fontSize = (_b = (_a = element.getAttribute("data-font-size")) != null ? _a : globalFontSize) != null ? _b : "12px";
-        const highlightOnly = (_d = (_c = element.getAttribute("data-highlight-only")) != null ? _c : globalHighlightOnly) != null ? _d : "false";
-        const showFoldedCodeButton = (_f = (_e = element == null ? void 0 : element.getAttribute("data-show-folded-code-button")) != null ? _e : globalShowFoldedCodeButton) != null ? _f : "true";
-        const playground = new Playground({
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+        const configuration = (_b = (_a = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a : globalConfiguration) != null ? _b : "run";
+        const fontSize = (_d = (_c = element.getAttribute("data-font-size")) != null ? _c : globalFontSize) != null ? _d : "12px";
+        const showLineNumbers = (_f = (_e = element == null ? void 0 : element.getAttribute("data-show-line-numbers")) != null ? _e : globalShowLineNumbers) != null ? _f : "true";
+        const highlightOnly = (_h = (_g = element.getAttribute("data-highlight-only")) != null ? _g : globalHighlightOnly) != null ? _h : "false";
+        const showFoldedCodeButton = (_j = (_i = element == null ? void 0 : element.getAttribute("data-show-folded-code-button")) != null ? _i : globalShowFoldedCodeButton) != null ? _j : "true";
+        const showFooter = (_l = (_k = element == null ? void 0 : element.getAttribute("data-show-footer")) != null ? _k : globalShowFooter) != null ? _l : "true";
+        const customRunButton = element == null ? void 0 : element.getAttribute("data-custom-run-button");
+        new Playground({
           element,
-          highlightOnly: highlightOnly == "true",
-          showFoldedCodeButton: showFoldedCodeButton == "true"
+          configuration,
+          fontSize,
+          showLineNumbers: showLineNumbers === "true",
+          highlightOnly: highlightOnly === "true",
+          showFoldedCodeButton: showFoldedCodeButton === "true",
+          showFooter: showFooter === "true",
+          customRunButton: customRunButton != null ? customRunButton : void 0
         });
-        playground.setEditorFontSize(fontSize);
       });
     });
   }

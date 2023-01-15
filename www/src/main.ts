@@ -5,23 +5,34 @@ import {Playground} from "./Playground"
 
 const currentScript = document.currentScript
 const selector = currentScript?.getAttribute("data-selector")
+const globalConfiguration = currentScript?.getAttribute("data-configuration")
 const globalFontSize = currentScript?.getAttribute("data-font-size")
+const globalShowLineNumbers = currentScript?.getAttribute("data-show-line-numbers")
 const globalHighlightOnly = currentScript?.getAttribute("data-highlight-only")
 const globalShowFoldedCodeButton = currentScript?.getAttribute("data-show-folded-code-button")
+const globalShowFooter = currentScript?.getAttribute("data-show-footer")
 
 if (selector) {
     window.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(selector).forEach((element) => {
+            const configuration = element?.getAttribute("data-configuration") ?? globalConfiguration ?? "run"
             const fontSize = element.getAttribute("data-font-size") ?? globalFontSize ?? "12px"
+            const showLineNumbers = element?.getAttribute("data-show-line-numbers") ?? globalShowLineNumbers ?? "true"
             const highlightOnly = element.getAttribute("data-highlight-only") ?? globalHighlightOnly ?? "false"
             const showFoldedCodeButton = element?.getAttribute("data-show-folded-code-button") ?? globalShowFoldedCodeButton ?? "true"
-            const playground = new Playground({
-                element: element as HTMLElement,
-                highlightOnly: highlightOnly == "true",
-                showFoldedCodeButton: showFoldedCodeButton == "true",
-            })
+            const showFooter = element?.getAttribute("data-show-footer") ?? globalShowFooter ?? "true"
+            const customRunButton = element?.getAttribute("data-custom-run-button")
 
-            playground.setEditorFontSize(fontSize)
+            new Playground({
+                element: element as HTMLElement,
+                configuration: configuration,
+                fontSize: fontSize,
+                showLineNumbers: showLineNumbers === "true",
+                highlightOnly: highlightOnly === "true",
+                showFoldedCodeButton: showFoldedCodeButton === "true",
+                showFooter: showFooter === "true",
+                customRunButton: customRunButton ?? undefined,
+            })
         })
     })
 }

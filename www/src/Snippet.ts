@@ -27,6 +27,10 @@ export class Snippet {
         this.suffix = parts.suffix
     }
 
+    public noFolding(): boolean {
+        return this.range.start == -1 && this.range.end == -1
+    }
+
     public countLines(): number {
         return this.code().split("\n").length
     }

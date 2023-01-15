@@ -79,6 +79,10 @@ body {
     grid-template-rows: 1fr 27px;
 }
 
+.v-playground.no-footer {
+    display: block;
+}
+
 .v-playground.closed-terminal .playground__terminal {
     display: none;
 }
@@ -91,7 +95,7 @@ body {
     position: relative;
     padding: 10px 0;
     /*min-height: 150px;*/
-    background-color: var(--background-color);
+    /*background-color: var(--background-color);*/
 }
 
 .v-playground.closed-terminal .playground__editor {
@@ -275,7 +279,6 @@ body {
 
 ::-webkit-scrollbar-track {
     border-radius: 5px;
-    margin: 5px;
 }
 
 ::-webkit-scrollbar-corner {

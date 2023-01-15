@@ -103,9 +103,8 @@
 
     <p>and you will get:</p>
 
-    <div class="vlang-code" data-theme="dark" data-font-size="14px" data-highlight-only="false">
+    <div class="vlang-code" data-theme="dark" data-show-line-numbers="false" data-font-size="14px" data-show-footer="false" data-configuration="tests" data-highlight-only="false">
         fn fib(n int) u64 {
-            //code::start
             mut f := []u64{len: n + 2}
             f[0] = 0
             f[1] = 1
@@ -113,39 +112,32 @@
             for i := 2; i <= n; i++ {
                 f[i] = f[i - 1] + f[i - 2]
             }
-            //code::end
 
             return f[n]
         }
-
-        fn main() {
-            for i in 0 .. 30 {
-                println(fib(i))
-            }
-        }
     </div>
 
     <br>
     <br>
 
-    <p>Write code to sum two numbers</p>
+<!--    <p>Write code to sum two numbers</p>-->
 
-    <div class="vlang-code" data-theme="light">
-        fn test_add() {
-            assert add(1, 2) == 3
-            assert add(2, 2) == 4
-        }
+<!--    <div class="vlang-code" data-theme="light">-->
+<!--        fn test_add() {-->
+<!--            assert add(1, 2) == 3-->
+<!--            assert add(2, 2) == 4-->
+<!--        }-->
 
-        //code::start
-        fn add(a int, b int) int {
-            // code here
-        }
-        //code::end
-    </div>
+<!--        //code::start-->
+<!--        fn add(a int, b int) int {-->
+<!--            // code here-->
+<!--        }-->
+<!--        //code::end-->
+<!--    </div>-->
 
-    <p>
-        Press Run button to check your solution.
-    </p>
+<!--    <p>-->
+<!--        Press Run button to check your solution.-->
+<!--    </p>-->
 
 <!--    <p>-->
 <!--        To use dark theme, add-->

@@ -11,10 +11,10 @@ export class Editor {
     public terminal: Terminal
     public snippet: Snippet | null = null
 
-    constructor(wrapper: HTMLElement, repository: CodeRepository, readonly: boolean) {
+    constructor(wrapper: HTMLElement, repository: CodeRepository, readonly: boolean, showLineNumbers: boolean) {
         const editorConfig: EditorConfiguration = {
             mode: "v",
-            lineNumbers: true,
+            lineNumbers: showLineNumbers,
             // @ts-ignore
             matchBrackets: true,
             extraKeys: {

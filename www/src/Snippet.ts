@@ -20,7 +20,7 @@ export class Snippet {
         const normalizedCode = this.normalizeCode(code)
 
         this.range = this.getSnippetRange(normalizedCode)
-        const parts = this.separateCodeBySnippetRange(code, this.range)
+        const parts = this.separateCodeBySnippetRange(normalizedCode, this.range)
         this.original = this.removeRangeMarkers(normalizedCode)
         this.prefix = parts.prefix
         this.foldedCode = this.normalizeCode(parts.code)
@@ -55,9 +55,16 @@ export class Snippet {
         const startLine = lines.findIndex(line => line.trim().startsWith("//code::start"))
         const endLine = lines.findIndex(line => line.trim().startsWith("//code::end"))
 
+        if (startLine == -1 || endLine == -1) {
+            return {
+                start: -1,
+                end: -1,
+            }
+        }
+
         return {
-            start: startLine,
-            end: endLine,
+            start: startLine + 1,
+            end: endLine - 1,
         }
     }
 
@@ -73,7 +80,7 @@ export class Snippet {
         const lines = code.split("\n")
         const prefix = lines.slice(0, range.start + 1).join("\n")
 
-        const codeSnippet = lines.slice(range.start + 2, range.end + 1).join("\n")
+        const codeSnippet = lines.slice(range.start, range.end + 1).join("\n")
         const suffix = lines.slice(range.end + 3).join("\n")
 
         return {

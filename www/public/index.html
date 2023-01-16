@@ -103,11 +103,18 @@
 
     <p>and you will get:</p>
 
-    <div class="vlang-code" data-theme="dark" data-show-line-numbers="false" data-font-size="14px" data-show-footer="false" data-configuration="tests" data-highlight-only="false">
+    <div class="vlang-code"
+         data-theme="light"
+         data-font-size="14px"
+         data-show-footer="false"
+         data-configuration="tests"
+         data-highlight-only="false">
         fn fib(n int) u64 {
+            //code::start
             mut f := []u64{len: n + 2}
             f[0] = 0
             f[1] = 1
+            //code::end
 
             for i := 2; i <= n; i++ {
                 f[i] = f[i - 1] + f[i - 2]
@@ -182,6 +189,22 @@
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script src="javascript.min.js"></script>
-<script>hljs.highlightAll();</script>
+<script>
+
+//     Playground.create(document.querySelector('.vlang-code2'), `fn test_add() {
+// \tassert add(1, 2) == 3
+// \tassert add(2, 2) == 3
+// }
+//
+// //code::start
+// fn add(a int, b int) int {
+// \t// write solution here
+// }
+// //code::end
+// `)
+
+    hljs.highlightAll();
+
+</script>
 
 </html>

@@ -16,6 +16,7 @@ export enum PlaygroundDefaultAction {
 export interface PlaygroundConfig {
     selector?: string
     element?: HTMLElement
+    code?: string
     configuration?: string
     fontSize?: string
     showLineNumbers?: boolean
@@ -44,7 +45,7 @@ export class Playground {
             throw new Error("No selector or element provided")
         }
 
-        const code = this.playgroundElement.textContent ?? ""
+        const code = config.code ?? this.playgroundElement.textContent ?? ""
         this.mount(this.playgroundElement)
 
         const theme = this.playgroundElement.getAttribute("data-theme") ?? "dark"
@@ -97,6 +98,28 @@ export class Playground {
 
             footer.style.display = "none"
         }
+    }
+
+    public static create(element: HTMLElement, code?: string): Playground {
+        const configuration = element?.getAttribute("data-configuration") ?? "run"
+        const fontSize = element.getAttribute("data-font-size") ?? "12px"
+        const showLineNumbers = element?.getAttribute("data-show-line-numbers") ?? "true"
+        const highlightOnly = element.getAttribute("data-highlight-only") ?? "false"
+        const showFoldedCodeButton = element?.getAttribute("data-show-folded-code-button") ?? "true"
+        const showFooter = element?.getAttribute("data-show-footer") ?? "true"
+        const customRunButton = element?.getAttribute("data-custom-run-button")
+
+        return new Playground({
+            element: element,
+            code: code,
+            configuration: configuration,
+            fontSize: fontSize,
+            showLineNumbers: showLineNumbers === "true",
+            highlightOnly: highlightOnly === "true",
+            showFoldedCodeButton: showFoldedCodeButton === "true",
+            showFooter: showFooter === "true",
+            customRunButton: customRunButton ?? undefined,
+        })
     }
 
     public registerRunAction(customSelector: string | undefined, callback: () => void): void {

@@ -671,7 +671,7 @@ println('Hello, Playground!')
       this.state = 0 /* Folded */;
       const normalizedCode = this.normalizeCode(code);
       this.range = this.getSnippetRange(normalizedCode);
-      const parts = this.separateCodeBySnippetRange(code, this.range);
+      const parts = this.separateCodeBySnippetRange(normalizedCode, this.range);
       this.original = this.removeRangeMarkers(normalizedCode);
       this.prefix = parts.prefix;
       this.foldedCode = this.normalizeCode(parts.code);
@@ -700,9 +700,15 @@ println('Hello, Playground!')
       const lines = code.split("\n");
       const startLine = lines.findIndex((line) => line.trim().startsWith("//code::start"));
       const endLine = lines.findIndex((line) => line.trim().startsWith("//code::end"));
+      if (startLine == -1 || endLine == -1) {
+        return {
+          start: -1,
+          end: -1
+        };
+      }
       return {
-        start: startLine,
-        end: endLine
+        start: startLine + 1,
+        end: endLine - 1
       };
     }
     separateCodeBySnippetRange(code, range) {
@@ -715,7 +721,7 @@ println('Hello, Playground!')
       }
       const lines = code.split("\n");
       const prefix = lines.slice(0, range.start + 1).join("\n");
-      const codeSnippet = lines.slice(range.start + 2, range.end + 1).join("\n");
+      const codeSnippet = lines.slice(range.start, range.end + 1).join("\n");
       const suffix = lines.slice(range.end + 3).join("\n");
       return {
         prefix,
@@ -862,7 +868,7 @@ println('Hello, Playground!')
       if (this.snippet.state == 1 /* Unfolded */) {
         this.editor.markText(
           { line: 0, ch: 0 },
-          { line: this.snippet.range.start, ch: 0 },
+          { line: this.snippet.range.start - 1, ch: 0 },
           {
             readOnly: true,
             inclusiveLeft: true,
@@ -870,7 +876,7 @@ println('Hello, Playground!')
           }
         );
         this.editor.markText(
-          { line: this.snippet.range.end + 2, ch: 0 },
+          { line: this.snippet.range.end, ch: 0 },
           { line: this.snippet.countLines(), ch: 0 },
           {
             readOnly: true,
@@ -879,10 +885,10 @@ println('Hello, Playground!')
           }
         );
         this.editor.operation(() => {
-          for (let i = 0; i < this.snippet.range.start; i++) {
+          for (let i = 0; i < this.snippet.range.start - 1; i++) {
             this.editor.addLineClass(i, "background", "unmodifiable-line");
           }
-          for (let i = this.snippet.range.end + 2; i < this.snippet.countLines(); i++) {
+          for (let i = this.snippet.range.end; i < this.snippet.countLines(); i++) {
             this.editor.addLineClass(i, "background", "unmodifiable-line");
           }
         });
@@ -1069,7 +1075,7 @@ println('Hello, Playground!')
   // src/Playground.ts
   var Playground = class {
     constructor(config) {
-      var _a, _b, _c, _d, _e;
+      var _a, _b, _c, _d, _e, _f;
       if (config.selector) {
         this.playgroundElement = document.querySelector(config.selector);
       } else if (config.element) {
@@ -1077,13 +1083,13 @@ println('Hello, Playground!')
       } else {
         throw new Error("No selector or element provided");
       }
-      const code = (_a = this.playgroundElement.textContent) != null ? _a : "";
+      const code = (_b = (_a = config.code) != null ? _a : this.playgroundElement.textContent) != null ? _b : "";
       this.mount(this.playgroundElement);
-      const theme = (_b = this.playgroundElement.getAttribute("data-theme")) != null ? _b : "dark";
+      const theme = (_c = this.playgroundElement.getAttribute("data-theme")) != null ? _c : "dark";
       this.runAsTests = config.configuration === "tests";
       this.repository = new TextCodeRepository(code);
       const editorElement = this.playgroundElement.querySelector(".v-playground");
-      this.editor = new Editor(editorElement, this.repository, (_c = config.highlightOnly) != null ? _c : false, (_d = config.showLineNumbers) != null ? _d : true);
+      this.editor = new Editor(editorElement, this.repository, (_d = config.highlightOnly) != null ? _d : false, (_e = config.showLineNumbers) != null ? _e : true);
       if (config.fontSize) {
         this.editor.setEditorFontSize(config.fontSize);
       }
@@ -1106,7 +1112,7 @@ println('Hello, Playground!')
           showAllActionButton.innerHTML = collapseSnippetIcons;
         }
       });
-      if (config.showFoldedCodeButton === false || ((_e = this.editor.snippet) == null ? void 0 : _e.noFolding())) {
+      if (config.showFoldedCodeButton === false || ((_f = this.editor.snippet) == null ? void 0 : _f.noFolding())) {
         const showAllActionButton = this.getActionElement("show-all");
         showAllActionButton.style.display = "none";
       }
@@ -1120,6 +1126,27 @@ println('Hello, Playground!')
         runActionButton.style.display = "none";
         footer.style.display = "none";
       }
+    }
+    static create(element, code) {
+      var _a, _b, _c, _d, _e, _f;
+      const configuration = (_a = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a : "run";
+      const fontSize = (_b = element.getAttribute("data-font-size")) != null ? _b : "12px";
+      const showLineNumbers = (_c = element == null ? void 0 : element.getAttribute("data-show-line-numbers")) != null ? _c : "true";
+      const highlightOnly = (_d = element.getAttribute("data-highlight-only")) != null ? _d : "false";
+      const showFoldedCodeButton = (_e = element == null ? void 0 : element.getAttribute("data-show-folded-code-button")) != null ? _e : "true";
+      const showFooter = (_f = element == null ? void 0 : element.getAttribute("data-show-footer")) != null ? _f : "true";
+      const customRunButton = element == null ? void 0 : element.getAttribute("data-custom-run-button");
+      return new Playground({
+        element,
+        code,
+        configuration,
+        fontSize,
+        showLineNumbers: showLineNumbers === "true",
+        highlightOnly: highlightOnly === "true",
+        showFoldedCodeButton: showFoldedCodeButton === "true",
+        showFooter: showFooter === "true",
+        customRunButton: customRunButton != null ? customRunButton : void 0
+      });
     }
     registerRunAction(customSelector, callback) {
       if (customSelector) {

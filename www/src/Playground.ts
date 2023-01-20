@@ -24,6 +24,7 @@ export interface PlaygroundConfig {
     showFoldedCodeButton?: boolean
     showFooter?: boolean
     customRunButton?: string
+    server?: string
 }
 
 /**
@@ -97,6 +98,10 @@ export class Playground {
             runActionButton.style.display = "none"
 
             footer.style.display = "none"
+        }
+
+        if (config.server) {
+            CodeRunner.server = config.server
         }
     }
 

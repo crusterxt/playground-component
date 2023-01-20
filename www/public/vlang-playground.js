@@ -110,8 +110,8 @@
     "any"
   ]);
   CodeMirror.defineMode("v", (config) => {
-    var _a;
-    const indentUnit = (_a = config.indentUnit) != null ? _a : 0;
+    var _a2;
+    const indentUnit = (_a2 = config.indentUnit) != null ? _a2 : 0;
     const isOperatorChar = /[+\-*&^%:=<>!|\/]/;
     let curPunc = null;
     function eatIdentifier(stream) {
@@ -436,7 +436,7 @@
     "x"
   ];
   function computeCompletionVariants(editor) {
-    var _a;
+    var _a2;
     let context = [];
     const cur = editor.getCursor();
     let token = editor.getTokenAt(cur);
@@ -459,7 +459,7 @@
     if (prevToken.string === ".") {
       context.push(prevToken);
     }
-    if (/\b(?:string|comment)\b/.test((_a = token.type) != null ? _a : ""))
+    if (/\b(?:string|comment)\b/.test((_a2 = token.type) != null ? _a2 : ""))
       return null;
     if (!/^[\w$_]*$/.test(token.string)) {
       token = {
@@ -850,7 +850,8 @@ println('Hello, Playground!')
       }
     }
     getCode() {
-      return this.editor.getValue();
+      var _a2, _b;
+      return (_b = (_a2 = this.snippet) == null ? void 0 : _a2.original) != null ? _b : "";
     }
     saveCode() {
       const isSharedCodeRepository = this.repository instanceof SharedCodeRepository;
@@ -922,7 +923,8 @@ println('Hello, Playground!')
     static runCode(code) {
       const data = new FormData();
       data.append("code", code);
-      return fetch("/run", {
+      const url = this.server !== null ? this.server + "/run" : "/run";
+      return fetch(url, {
         method: "post",
         body: data
       }).then((resp) => {
@@ -935,7 +937,8 @@ println('Hello, Playground!')
     static runTest(code) {
       const data = new FormData();
       data.append("code", code);
-      return fetch("/run_test", {
+      const url = this.server !== null ? this.server + "/run_test" : "/run_test";
+      return fetch(url, {
         method: "post",
         body: data
       }).then((resp) => {
@@ -1075,7 +1078,7 @@ println('Hello, Playground!')
   // src/Playground.ts
   var Playground = class {
     constructor(config) {
-      var _a, _b, _c, _d, _e, _f;
+      var _a2, _b, _c, _d, _e, _f;
       if (config.selector) {
         this.playgroundElement = document.querySelector(config.selector);
       } else if (config.element) {
@@ -1083,7 +1086,7 @@ println('Hello, Playground!')
       } else {
         throw new Error("No selector or element provided");
       }
-      const code = (_b = (_a = config.code) != null ? _a : this.playgroundElement.textContent) != null ? _b : "";
+      const code = (_b = (_a2 = config.code) != null ? _a2 : this.playgroundElement.textContent) != null ? _b : "";
       this.mount(this.playgroundElement);
       const theme = (_c = this.playgroundElement.getAttribute("data-theme")) != null ? _c : "dark";
       this.runAsTests = config.configuration === "tests";
@@ -1103,10 +1106,10 @@ println('Hello, Playground!')
         this.run();
       });
       this.registerAction("show-all", () => {
-        var _a2;
+        var _a3;
         this.editor.toggleSnippet();
         const showAllActionButton = this.getActionElement("show-all");
-        if (((_a2 = this.editor.snippet) == null ? void 0 : _a2.state) === 0 /* Folded */) {
+        if (((_a3 = this.editor.snippet) == null ? void 0 : _a3.state) === 0 /* Folded */) {
           showAllActionButton.innerHTML = expandSnippetIcons;
         } else {
           showAllActionButton.innerHTML = collapseSnippetIcons;
@@ -1126,10 +1129,13 @@ println('Hello, Playground!')
         runActionButton.style.display = "none";
         footer.style.display = "none";
       }
+      if (config.server) {
+        CodeRunner.server = config.server;
+      }
     }
     static create(element, code) {
-      var _a, _b, _c, _d, _e, _f;
-      const configuration = (_a = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a : "run";
+      var _a2, _b, _c, _d, _e, _f;
+      const configuration = (_a2 = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a2 : "run";
       const fontSize = (_b = element.getAttribute("data-font-size")) != null ? _b : "12px";
       const showLineNumbers = (_c = element == null ? void 0 : element.getAttribute("data-show-line-numbers")) != null ? _c : "true";
       const highlightOnly = (_d = element.getAttribute("data-highlight-only")) != null ? _d : "false";
@@ -1249,11 +1255,13 @@ println('Hello, Playground!')
   var globalHighlightOnly = currentScript == null ? void 0 : currentScript.getAttribute("data-highlight-only");
   var globalShowFoldedCodeButton = currentScript == null ? void 0 : currentScript.getAttribute("data-show-folded-code-button");
   var globalShowFooter = currentScript == null ? void 0 : currentScript.getAttribute("data-show-footer");
+  var _a;
+  var globalServer = (_a = currentScript == null ? void 0 : currentScript.getAttribute("data-server")) != null ? _a : void 0;
   if (selector) {
     window.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(selector).forEach((element) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
-        const configuration = (_b = (_a = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a : globalConfiguration) != null ? _b : "run";
+        var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+        const configuration = (_b = (_a2 = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a2 : globalConfiguration) != null ? _b : "run";
         const fontSize = (_d = (_c = element.getAttribute("data-font-size")) != null ? _c : globalFontSize) != null ? _d : "12px";
         const showLineNumbers = (_f = (_e = element == null ? void 0 : element.getAttribute("data-show-line-numbers")) != null ? _e : globalShowLineNumbers) != null ? _f : "true";
         const highlightOnly = (_h = (_g = element.getAttribute("data-highlight-only")) != null ? _g : globalHighlightOnly) != null ? _h : "false";
@@ -1268,7 +1276,8 @@ println('Hello, Playground!')
           highlightOnly: highlightOnly === "true",
           showFoldedCodeButton: showFoldedCodeButton === "true",
           showFooter: showFooter === "true",
-          customRunButton: customRunButton != null ? customRunButton : void 0
+          customRunButton: customRunButton != null ? customRunButton : void 0,
+          server: globalServer
         });
       });
     });

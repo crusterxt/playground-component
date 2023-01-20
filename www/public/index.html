@@ -109,6 +109,11 @@
          data-show-footer="false"
          data-configuration="tests"
          data-highlight-only="false">
+
+        fn test_fib() {
+            assert fib(4) == 3
+        }
+
         fn fib(n int) u64 {
             //code::start
             mut f := []u64{len: n + 2}
@@ -185,7 +190,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script>
 
-<script src="./vlang-playground.js" data-selector=".vlang-code" data-font-size="14px"></script>
+<script src="./vlang-playground.js" data-server="https://play.vlang.foundation" data-selector=".vlang-code" data-font-size="14px"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script src="javascript.min.js"></script>

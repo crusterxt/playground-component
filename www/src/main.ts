@@ -11,6 +11,7 @@ const globalShowLineNumbers = currentScript?.getAttribute("data-show-line-number
 const globalHighlightOnly = currentScript?.getAttribute("data-highlight-only")
 const globalShowFoldedCodeButton = currentScript?.getAttribute("data-show-folded-code-button")
 const globalShowFooter = currentScript?.getAttribute("data-show-footer")
+const globalServer = currentScript?.getAttribute("data-server") ?? undefined
 
 if (selector) {
     window.addEventListener("DOMContentLoaded", () => {
@@ -32,6 +33,7 @@ if (selector) {
                 showFoldedCodeButton: showFoldedCodeButton === "true",
                 showFooter: showFooter === "true",
                 customRunButton: customRunButton ?? undefined,
+                server: globalServer,
             })
         })
     })

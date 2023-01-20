@@ -96,7 +96,7 @@ export class Editor {
     }
 
     public getCode() {
-        return this.editor.getValue()
+        return this.snippet?.original ?? ""
     }
 
     public saveCode() {

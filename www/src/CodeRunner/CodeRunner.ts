@@ -17,11 +17,14 @@ export class ShareCodeResult {
  * CodeRunner describes how to run, format and share code.
  */
 export class CodeRunner {
+    public static server: string | null;
+
     public static runCode(code: string): Promise<RunCodeResult> {
         const data = new FormData()
         data.append("code", code)
 
-        return fetch("/run", {
+        const url = this.server !== null ? this.server + "/run" : "/run"
+        return fetch(url, {
             method: "post",
             body: data,
         })
@@ -39,7 +42,8 @@ export class CodeRunner {
         const data = new FormData()
         data.append("code", code)
 
-        return fetch("/run_test", {
+        const url = this.server !== null ? this.server + "/run_test" : "/run_test"
+        return fetch(url, {
             method: "post",
             body: data,
         })

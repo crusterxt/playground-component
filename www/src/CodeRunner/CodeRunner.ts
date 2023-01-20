@@ -1,16 +1,6 @@
-class RunCodeResult {
-    constructor(public output: string) {
-    }
-}
-
-type FormatCodeResult = {
+export type RunCodeResult = {
     ok: boolean
     output: string
-}
-
-export class ShareCodeResult {
-    constructor(public hash: string) {
-    }
 }
 
 /**
@@ -33,9 +23,10 @@ export class CodeRunner {
                     throw new Error("Can't run code")
                 }
 
-                return resp.text()
+                return resp
             })
-            .then(output => new RunCodeResult(output))
+            .then(resp => resp.json())
+            .then(data => JSON.parse(data) as RunCodeResult)
     }
 
     public static runTest(code: string): Promise<RunCodeResult> {
@@ -52,9 +43,10 @@ export class CodeRunner {
                     throw new Error("Can't run test")
                 }
 
-                return resp.text()
+                return resp
             })
-            .then(output => new RunCodeResult(output))
+            .then(resp => resp.json())
+            .then(data => JSON.parse(data) as RunCodeResult)
     }
 
     private static buildUrl(path: string) {

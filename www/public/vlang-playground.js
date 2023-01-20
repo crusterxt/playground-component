@@ -914,11 +914,6 @@ println('Hello, Playground!')
   };
 
   // src/CodeRunner/CodeRunner.ts
-  var RunCodeResult = class {
-    constructor(output) {
-      this.output = output;
-    }
-  };
   var CodeRunner = class {
     static runCode(code) {
       const data = new FormData();
@@ -931,8 +926,8 @@ println('Hello, Playground!')
         if (resp.status != 200) {
           throw new Error("Can't run code");
         }
-        return resp.text();
-      }).then((output) => new RunCodeResult(output));
+        return resp;
+      }).then((resp) => resp.json()).then((data2) => JSON.parse(data2));
     }
     static runTest(code) {
       const data = new FormData();
@@ -945,8 +940,8 @@ println('Hello, Playground!')
         if (resp.status != 200) {
           throw new Error("Can't run test");
         }
-        return resp.text();
-      }).then((output) => new RunCodeResult(output));
+        return resp;
+      }).then((resp) => resp.json()).then((data2) => JSON.parse(data2));
     }
     static buildUrl(path) {
       if (this.server !== null && this.server !== void 0) {
@@ -1085,6 +1080,8 @@ println('Hello, Playground!')
   // src/Playground.ts
   var Playground = class {
     constructor(config) {
+      this.onSuccessfulRun = [];
+      this.onFailedRun = [];
       var _a, _b, _c, _d, _e, _f;
       if (config.selector) {
         this.playgroundElement = document.querySelector(config.selector);
@@ -1163,6 +1160,12 @@ println('Hello, Playground!')
         server: server != null ? server : void 0
       });
     }
+    registerOnSuccessfulRun(callback) {
+      this.onSuccessfulRun.push(callback);
+    }
+    registerOnFailedRun(callback) {
+      this.onFailedRun.push(callback);
+    }
     registerRunAction(customSelector, callback) {
       if (customSelector) {
         const customButton = document.querySelector(customSelector);
@@ -1211,9 +1214,11 @@ println('Hello, Playground!')
       CodeRunner.runCode(code).then((result) => {
         this.clearTerminal();
         this.writeToTerminal(result.output);
+        this.onRunFinished(result);
       }).catch((err) => {
         console.log(err);
         this.writeToTerminal("Can't run code. Please try again.");
+        this.onFailedRun.forEach((callback) => callback());
       });
     }
     runTests() {
@@ -1223,10 +1228,19 @@ println('Hello, Playground!')
       CodeRunner.runTest(code).then((result) => {
         this.clearTerminal();
         this.writeToTerminal(result.output);
+        this.onRunFinished(result);
       }).catch((err) => {
         console.log(err);
         this.writeToTerminal("Can't run tests. Please try again.");
+        this.onFailedRun.forEach((callback) => callback());
       });
+    }
+    onRunFinished(result) {
+      if (result.ok) {
+        this.onSuccessfulRun.forEach((callback) => callback());
+      } else {
+        this.onFailedRun.forEach((callback) => callback());
+      }
     }
     setupShortcuts() {
       this.editor.editor.on("keypress", (cm, event) => {

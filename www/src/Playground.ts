@@ -1,7 +1,7 @@
 import {CodeRepository, TextCodeRepository} from "./Repositories"
 
 import {Editor} from "./Editor/Editor"
-import {CodeRunner} from "./CodeRunner/CodeRunner"
+import {CodeRunner, RunCodeResult} from "./CodeRunner/CodeRunner"
 import {collapseSnippetIcons, expandSnippetIcons, template} from "./template"
 import {ThemeManager} from "./ThemeManager/ThemeManager"
 import {SnippetState} from "./Snippet"
@@ -36,6 +36,8 @@ export class Playground {
     private readonly editor: Editor
     private readonly themeManager: ThemeManager
     private readonly runAsTests: boolean
+    private onSuccessfulRun: (() => void)[] = []
+    private onFailedRun: (() => void)[] = []
 
     constructor(config: PlaygroundConfig) {
         if (config.selector) {
@@ -129,6 +131,14 @@ export class Playground {
         })
     }
 
+    public registerOnSuccessfulRun(callback: () => void): void {
+        this.onSuccessfulRun.push(callback)
+    }
+
+    public registerOnFailedRun(callback: () => void): void {
+        this.onFailedRun.push(callback)
+    }
+
     public registerRunAction(customSelector: string | undefined, callback: () => void): void {
         if (customSelector) {
             const customButton = document.querySelector(customSelector) as HTMLElement
@@ -188,10 +198,12 @@ export class Playground {
             .then(result => {
                 this.clearTerminal()
                 this.writeToTerminal(result.output)
+                this.onRunFinished(result)
             })
             .catch(err => {
                 console.log(err)
                 this.writeToTerminal("Can't run code. Please try again.")
+                this.onFailedRun.forEach(callback => callback())
             })
     }
 
@@ -204,11 +216,21 @@ export class Playground {
             .then(result => {
                 this.clearTerminal()
                 this.writeToTerminal(result.output)
+                this.onRunFinished(result)
             })
             .catch(err => {
                 console.log(err)
                 this.writeToTerminal("Can't run tests. Please try again.")
+                this.onFailedRun.forEach(callback => callback())
             })
+    }
+
+    private onRunFinished(result: RunCodeResult) {
+        if (result.ok) {
+            this.onSuccessfulRun.forEach(callback => callback())
+        } else {
+            this.onFailedRun.forEach(callback => callback())
+        }
     }
 
     public setupShortcuts(): void {

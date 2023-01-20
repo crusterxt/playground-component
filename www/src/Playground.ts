@@ -100,7 +100,7 @@ export class Playground {
             footer.style.display = "none"
         }
 
-        if (config.server) {
+        if (config.server !== undefined) {
             CodeRunner.server = config.server
         }
     }
@@ -113,6 +113,7 @@ export class Playground {
         const showFoldedCodeButton = element?.getAttribute("data-show-folded-code-button") ?? "true"
         const showFooter = element?.getAttribute("data-show-footer") ?? "true"
         const customRunButton = element?.getAttribute("data-custom-run-button")
+        const server = element?.getAttribute("data-server")
 
         return new Playground({
             element: element,
@@ -124,6 +125,7 @@ export class Playground {
             showFoldedCodeButton: showFoldedCodeButton === "true",
             showFooter: showFooter === "true",
             customRunButton: customRunButton ?? undefined,
+            server: server ?? undefined,
         })
     }
 

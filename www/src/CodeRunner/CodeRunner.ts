@@ -23,7 +23,7 @@ export class CodeRunner {
         const data = new FormData()
         data.append("code", code)
 
-        const url = this.server !== null ? this.server + "/run" : "/run"
+        const url = this.buildUrl("run")
         return fetch(url, {
             method: "post",
             body: data,
@@ -42,7 +42,7 @@ export class CodeRunner {
         const data = new FormData()
         data.append("code", code)
 
-        const url = this.server !== null ? this.server + "/run_test" : "/run_test"
+        const url = this.buildUrl("run_test")
         return fetch(url, {
             method: "post",
             body: data,
@@ -55,5 +55,14 @@ export class CodeRunner {
                 return resp.text()
             })
             .then(output => new RunCodeResult(output))
+    }
+
+    private static buildUrl(path: string) {
+        if (this.server !== null && this.server !== undefined) {
+            const server = this.server.endsWith('/') ? this.server.slice(0, -1) : this.server
+            return `${server}/${path}`
+        }
+        
+        return  `/${path}`
     }
 }

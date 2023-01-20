@@ -11,7 +11,7 @@ const globalShowLineNumbers = currentScript?.getAttribute("data-show-line-number
 const globalHighlightOnly = currentScript?.getAttribute("data-highlight-only")
 const globalShowFoldedCodeButton = currentScript?.getAttribute("data-show-folded-code-button")
 const globalShowFooter = currentScript?.getAttribute("data-show-footer")
-const globalServer = currentScript?.getAttribute("data-server") ?? undefined
+const globalServer = currentScript?.getAttribute("data-server")
 
 if (selector) {
     window.addEventListener("DOMContentLoaded", () => {
@@ -23,6 +23,7 @@ if (selector) {
             const showFoldedCodeButton = element?.getAttribute("data-show-folded-code-button") ?? globalShowFoldedCodeButton ?? "true"
             const showFooter = element?.getAttribute("data-show-footer") ?? globalShowFooter ?? "true"
             const customRunButton = element?.getAttribute("data-custom-run-button")
+            const server = element?.getAttribute("data-server") ?? globalServer
 
             new Playground({
                 element: element as HTMLElement,
@@ -33,7 +34,7 @@ if (selector) {
                 showFoldedCodeButton: showFoldedCodeButton === "true",
                 showFooter: showFooter === "true",
                 customRunButton: customRunButton ?? undefined,
-                server: globalServer,
+                server: server ?? undefined,
             })
         })
     })

@@ -33,6 +33,10 @@ export class Snippet {
     }
 
     public getCode(): string {
+        if (this.noFolding()) {
+            return this.code
+        }
+
         if (this.state == SnippetState.Unfolded) {
             return this.getUnfoldedCode()
         }
@@ -56,6 +60,10 @@ export class Snippet {
     }
 
     private getUnfoldedCodeWithoutCaching() {
+        if (this.noFolding()) {
+            return this.currentCodeObtainer()
+        }
+
         // get current folded code from editor to take care changes from user
         const visibleCode = this.currentCodeObtainer()
         const indent = " ".repeat(this.removedIndent)
@@ -74,6 +82,10 @@ export class Snippet {
     }
 
     private getFoldedCode(): string {
+        if (this.noFolding()) {
+            return this.currentCodeObtainer()
+        }
+
         if (this.foldedCode != null) {
             return this.foldedCode
         }

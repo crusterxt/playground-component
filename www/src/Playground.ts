@@ -215,7 +215,15 @@ export class Playground {
         CodeRunner.runTest(code)
             .then(result => {
                 this.clearTerminal()
-                this.writeToTerminal(result.output)
+
+                if (result.ok) {
+                    this.editor.terminal.writeTestPassed()
+                } else {
+                    this.editor.terminal.writeTestFailed()
+                    const output = result.output.split("\n").slice(2, -5).join("\n")
+                    this.writeToTerminal(output)
+                }
+
                 this.onRunFinished(result)
             })
             .catch(err => {

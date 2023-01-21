@@ -1,4 +1,4 @@
-// this is work and it is not a joke
+// this is works and it is not a joke
 module main
 
 import os

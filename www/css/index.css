@@ -1,5 +1,4 @@
 @import "../../codemirror/css/codemirror.css";
 @import "./editor_themes/light.css";
 @import "./editor_themes/dark.css";
-@import "./highlight.css";
-@import "./embed/embed.css";
+@import "embed.css";

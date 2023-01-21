@@ -1,9 +1,5 @@
+@import "../../codemirror/css/codemirror.css";
 @import "./editor_themes/light.css";
 @import "./editor_themes/dark.css";
-/*@import "./variables.css";*/
-/*@import "./style.css";*/
-/*@import "./playground_select_examples.css";*/
 @import "./highlight.css";
 @import "./embed/embed.css";
-/*@import "./playground_help.css";*/
-/*@import "./playground.css";*/

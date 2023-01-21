@@ -2,8 +2,8 @@
   "name": "ts",
   "version": "1.0.0",
   "scripts": {
-    "build": "node esbuild.config.js",
-    "watch": "tsc --noEmit -w"
+    "watch": "node esbuild.watch.config.js",
+    "prod": "node esbuild.build.config.js && v run ./bundle-js.v"
   },
   "dependencies": {
     "@codemirror/language": "^6.2.1",

@@ -9,49 +9,31 @@ function printResult(result) {
   });
 }
 
-const styleResult = esbuild.build({
+const styleResult = esbuild.buildSync({
   bundle: true,
   minify: true,
   metafile: true,
-  outfile: path.resolve(__dirname, "./public/style.css"),
+  outfile: path.resolve(__dirname, "../dist/vlang-playground.css"),
   target: "esnext",
   entryPoints: ["./css/index.css"],
   loader: {
     '.svg': 'base64',
   },
-  watch: {
-    onRebuild(error, result) {
-      if (error) {
-        console.error('watch build failed:', error)
-      } else {
-        console.log('watch build succeeded:', result)
-      }
-    },
-  },
 });
 
 printResult(styleResult?.metafile?.outputs || {});
 
-const codeResult = esbuild.build({
-  // minify: true,
+const codeResult = esbuild.buildSync({
+  minify: true,
   bundle: true,
-  // keepNames: false,
+  keepNames: false,
   metafile: true,
-  outfile: path.resolve(__dirname, "./public/vlang-playground.js"),
+  outfile: path.resolve(__dirname, "./public/playground.js"),
   sourcemap: true,
   platform: "browser",
   target: "es6",
   external: ["codemirror"],
   entryPoints: ["./src/main.ts"],
-  watch: {
-    onRebuild(error, result) {
-      if (error) {
-        console.error('watch build failed:', error)
-      } else {
-        console.log('watch build succeeded:', result)
-      }
-    },
-  },
 });
 
 printResult(codeResult?.metafile?.outputs || {});

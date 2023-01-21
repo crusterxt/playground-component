@@ -1,0 +1,18 @@
+{
+  "name": "vlang-playground",
+  "version": "1.0.2",
+  "description": "Self-contained component to embed in websites for running V code",
+  "keywords": [
+    "vlang",
+    "runnable code"
+  ],
+  "author": {
+    "name": "Petr Makhnev",
+    "email": "mr.makhneff@gmail.com",
+    "url": "https://github.com/i582"
+  },
+  "main": "dist/vlang-playground.js",
+  "files": [
+    "./dist"
+  ]
+}

@@ -55,7 +55,7 @@ export const template =
   </div>
   
   <div class="js-playground__footer playground__footer">
-    <a href="#" class="js-playground-link playground-link">Playground →</a>
-    </div>
+    <span class="js-playground-link playground-link">Playground →</span>
+  </div>
 </div>
 `

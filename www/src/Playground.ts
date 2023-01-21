@@ -84,6 +84,8 @@ export class Playground {
             }
         })
 
+        this.setupPlaygroundLink()
+
         if (config.showFoldedCodeButton === false || this.editor.snippet?.noFolding()) {
             const showAllActionButton = this.getActionElement("show-all")
             showAllActionButton.style.display = "none"
@@ -105,6 +107,17 @@ export class Playground {
         if (config.server !== undefined) {
             CodeRunner.server = config.server
         }
+    }
+
+    private setupPlaygroundLink() {
+        const playgroundLink = this.playgroundElement.querySelector(".js-playground-link") as HTMLElement
+        playgroundLink.addEventListener("click", () => {
+            const baseUrl = "https://play.vlang.foundation/?base64="
+            const code = this.editor.snippet?.getRunnableCode()!
+            const base64Code = btoa(code)
+            const url = baseUrl + base64Code
+            window.open(url, "_blank")
+        })
     }
 
     public static create(element: HTMLElement, code?: string): Playground {

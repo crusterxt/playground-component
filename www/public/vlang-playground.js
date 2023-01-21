@@ -1082,8 +1082,8 @@ println('Hello, Playground!')
   </div>
   
   <div class="js-playground__footer playground__footer">
-    <a href="#" class="js-playground-link playground-link">Playground \u2192</a>
-    </div>
+    <span class="js-playground-link playground-link">Playground \u2192</span>
+  </div>
 </div>
 `;
 
@@ -1194,6 +1194,7 @@ println('Hello, Playground!')
           showAllActionButton.innerHTML = collapseSnippetIcons;
         }
       });
+      this.setupPlaygroundLink();
       if (config.showFoldedCodeButton === false || ((_f = this.editor.snippet) == null ? void 0 : _f.noFolding())) {
         const showAllActionButton = this.getActionElement("show-all");
         showAllActionButton.style.display = "none";
@@ -1211,6 +1212,17 @@ println('Hello, Playground!')
       if (config.server !== void 0) {
         CodeRunner.server = config.server;
       }
+    }
+    setupPlaygroundLink() {
+      const playgroundLink = this.playgroundElement.querySelector(".js-playground-link");
+      playgroundLink.addEventListener("click", () => {
+        var _a;
+        const baseUrl = "https://play.vlang.foundation/?base64=";
+        const code = (_a = this.editor.snippet) == null ? void 0 : _a.getRunnableCode();
+        const base64Code = btoa(code);
+        const url = baseUrl + base64Code;
+        window.open(url, "_blank");
+      });
     }
     static create(element, code) {
       var _a, _b, _c, _d, _e, _f;

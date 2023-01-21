@@ -220,7 +220,7 @@ export class Playground {
                     this.editor.terminal.writeTestPassed()
                 } else {
                     this.editor.terminal.writeTestFailed()
-                    const output = result.output.split("\n").slice(2, -5).join("\n")
+                    const output = result.output.split("\n").slice(2, -6).join("\n")
                     this.writeToTerminal(output)
                 }
 

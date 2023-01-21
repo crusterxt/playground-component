@@ -77,39 +77,39 @@
 
     <p>Add next HTML:</p>
 
-    <pre><code class="hljs language-html">&lt;script src="./vlang-playground.js" data-selector=".vlang-code">&lt;/script>
+<!--    <pre><code class="hljs language-html">&lt;script src="./vlang-playground.js" data-selector=".vlang-code">&lt;/script>-->
 
-&lt;div class="vlang-code" data-theme="light">
-        fn fib(n int) u64 {
-            //code::start
-            mut f := []u64{len: n + 2}
-            f[0] = 0
-            f[1] = 1
+<!--&lt;div class="vlang-code" data-theme="light">-->
+<!--        fn fib(n int) u64 {-->
+<!--            //code::start-->
+<!--            mut f := []u64{len: n + 2}-->
+<!--            f[0] = 0-->
+<!--            f[1] = 1-->
 
-            for i := 2; i <= n; i++ {
-                f[i] = f[i - 1] + f[i - 2]
-            }
-            //code::end
+<!--            for i := 2; i <= n; i++ {-->
+<!--                f[i] = f[i - 1] + f[i - 2]-->
+<!--            }-->
+<!--            //code::end-->
 
-            return f[n]
-        }
+<!--            return f[n]-->
+<!--        }-->
 
-        fn main() {
-            for i in 0 .. 30 {
-                println(fib(i))
-            }
-        }
-&lt;/div></code></pre>
+<!--        fn main() {-->
+<!--            for i in 0 .. 30 {-->
+<!--                println(fib(i))-->
+<!--            }-->
+<!--        }-->
+<!--&lt;/div></code></pre>-->
 
     <p>and you will get:</p>
 
     <div class="vlang-code"
          data-theme="light"
+         data-server="https://play.vlang.foundation/"
          data-font-size="14px"
          data-show-footer="false"
          data-configuration="tests"
          data-highlight-only="false">
-
         fn test_fib() {
             assert fib(4) == 3
         }

@@ -668,32 +668,72 @@ println('Hello, Playground!')
   // src/Snippet.ts
   var Snippet = class {
     constructor(code) {
+      this.removedIndent = 0;
       this.state = 0 /* Folded */;
+      this.wasUnfolded = false;
+      this.foldedCode = null;
+      this.unfoldedCode = null;
+      this.currentCodeObtainer = () => "";
       const normalizedCode = this.normalizeCode(code);
       this.range = this.getSnippetRange(normalizedCode);
-      const parts = this.separateCodeBySnippetRange(normalizedCode, this.range);
-      this.original = this.removeRangeMarkers(normalizedCode);
-      this.prefix = parts.prefix;
-      this.foldedCode = this.normalizeCode(parts.code);
-      this.suffix = parts.suffix;
+      this.code = this.removeRangeMarkers(normalizedCode);
+    }
+    registerCurrentCodeObtainer(obtainer) {
+      this.currentCodeObtainer = obtainer;
     }
     noFolding() {
-      return this.range.start == -1 && this.range.end == -1;
+      return this.range.start == -1;
     }
-    countLines() {
-      return this.code().split("\n").length;
-    }
-    code() {
+    getCode() {
       if (this.state == 1 /* Unfolded */) {
-        return this.original;
+        return this.getUnfoldedCode();
       }
-      return this.foldedCode;
+      return this.getFoldedCode();
+    }
+    getRunnableCode() {
+      if (this.state == 1 /* Unfolded */) {
+        return this.currentCodeObtainer();
+      }
+      return this.getUnfoldedCodeWithoutCaching();
+    }
+    getUnfoldedCode() {
+      if (this.unfoldedCode != null) {
+        return this.unfoldedCode;
+      }
+      return this.getUnfoldedCodeWithoutCaching();
+    }
+    getUnfoldedCodeWithoutCaching() {
+      const visibleCode = this.currentCodeObtainer();
+      const indent = " ".repeat(this.removedIndent);
+      const indented = visibleCode.split("\n").map((line) => indent + line).join("\n");
+      const lines = this.code.split("\n");
+      const prefix = lines.slice(0, this.range.start).join("\n");
+      const suffix = lines.slice(lines.length - this.range.startFromEnd).join("\n");
+      const code = prefix + "\n" + indented + "\n" + suffix;
+      this.unfoldedCode = code;
+      return code;
+    }
+    getFoldedCode() {
+      if (this.foldedCode != null) {
+        return this.foldedCode;
+      }
+      if (this.wasUnfolded) {
+        this.code = this.currentCodeObtainer();
+      }
+      const lines = this.code.split("\n");
+      const rawFoldedCode = lines.slice(this.range.start, lines.length - this.range.startFromEnd).join("\n");
+      const code = this.normalizeIndents(rawFoldedCode);
+      this.foldedCode = code;
+      return code;
     }
     toggle() {
       if (this.state == 0 /* Folded */) {
         this.state = 1 /* Unfolded */;
+        this.wasUnfolded = true;
+        this.foldedCode = null;
       } else {
         this.state = 0 /* Folded */;
+        this.unfoldedCode = null;
       }
     }
     getSnippetRange(code) {
@@ -701,47 +741,20 @@ println('Hello, Playground!')
       const startLine = lines.findIndex((line) => line.trim().startsWith("//code::start"));
       const endLine = lines.findIndex((line) => line.trim().startsWith("//code::end"));
       if (startLine == -1 || endLine == -1) {
-        return {
-          start: -1,
-          end: -1
-        };
+        return { start: -1, startFromEnd: 0 };
       }
       return {
-        start: startLine + 1,
-        end: endLine - 1
+        start: startLine,
+        startFromEnd: lines.length - endLine - 1
       };
-    }
-    separateCodeBySnippetRange(code, range) {
-      if (range.start == -1 && range.end == -1) {
-        return {
-          prefix: "",
-          code,
-          suffix: ""
-        };
-      }
-      const lines = code.split("\n");
-      const prefix = lines.slice(0, range.start + 1).join("\n");
-      const codeSnippet = lines.slice(range.start, range.end + 1).join("\n");
-      const suffix = lines.slice(range.end + 3).join("\n");
-      return {
-        prefix,
-        code: codeSnippet,
-        suffix
-      };
-    }
-    lineIndent(line) {
-      for (let i = 0; i < line.length; i++) {
-        if (line[i] !== " ") {
-          return i;
-        }
-      }
-      return Number.MAX_VALUE;
     }
     // code:
     // ```
+    //
     //     fn foo() {
     //       println!("Hello, world!");
     //     }
+    //
     // ```
     // output:
     // ```
@@ -750,10 +763,7 @@ println('Hello, Playground!')
     // }
     // ```
     normalizeCode(code) {
-      const lines = code.split("\n");
-      const indents = lines.map((line) => this.lineIndent(line));
-      const minIndent = Math.min(...indents);
-      const trimmed = lines.map((line) => line.substring(minIndent));
+      const trimmed = this.normalizeIndents(code).split("\n");
       if (trimmed.length > 1) {
         const first = trimmed[0];
         const last = trimmed[trimmed.length - 1];
@@ -765,6 +775,23 @@ println('Hello, Playground!')
         }
       }
       return trimmed.join("\n");
+    }
+    normalizeIndents(code) {
+      const lines = code.split("\n");
+      const indents = lines.map((line) => this.lineIndent(line));
+      const minIndent = Math.min(...indents);
+      const trimmed = lines.map((line) => line.substring(minIndent));
+      this.removedIndent = minIndent;
+      return trimmed.join("\n");
+    }
+    lineIndent(line) {
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] !== " " && line[i] != "	") {
+          const substring = line.substring(0, i).replaceAll("	", "    ");
+          return substring.length;
+        }
+      }
+      return Number.MAX_VALUE;
     }
     removeRangeMarkers(code) {
       const lines = code.split("\n");
@@ -812,7 +839,8 @@ println('Hello, Playground!')
           return;
         }
         this.snippet = new Snippet(code);
-        this.setCode(this.snippet.code());
+        this.snippet.registerCurrentCodeObtainer(() => this.editor.getValue());
+        this.setCode(this.snippet.getCode());
       });
       const terminalElement = wrapper.querySelector(".js-terminal");
       if (terminalElement === null || terminalElement === void 0) {
@@ -850,8 +878,8 @@ println('Hello, Playground!')
       }
     }
     getCode() {
-      var _a, _b;
-      return (_b = (_a = this.snippet) == null ? void 0 : _a.original) != null ? _b : "";
+      var _a;
+      return (_a = this.snippet) == null ? void 0 : _a.getCode();
     }
     saveCode() {
       const isSharedCodeRepository = this.repository instanceof SharedCodeRepository;
@@ -865,11 +893,15 @@ println('Hello, Playground!')
         return;
       }
       this.snippet.toggle();
-      this.setCode(this.snippet.code());
+      this.setCode(this.snippet.getCode());
       if (this.snippet.state == 1 /* Unfolded */) {
+        const code = this.snippet.getCode();
+        const countLines = code.split("\n").length;
+        const startRange = this.snippet.range.start;
+        const endRange = countLines - this.snippet.range.startFromEnd;
         this.editor.markText(
           { line: 0, ch: 0 },
-          { line: this.snippet.range.start - 1, ch: 0 },
+          { line: startRange, ch: 0 },
           {
             readOnly: true,
             inclusiveLeft: true,
@@ -877,8 +909,8 @@ println('Hello, Playground!')
           }
         );
         this.editor.markText(
-          { line: this.snippet.range.end, ch: 0 },
-          { line: this.snippet.countLines(), ch: 0 },
+          { line: endRange, ch: 0 },
+          { line: countLines, ch: 0 },
           {
             readOnly: true,
             inclusiveLeft: true,
@@ -886,10 +918,10 @@ println('Hello, Playground!')
           }
         );
         this.editor.operation(() => {
-          for (let i = 0; i < this.snippet.range.start - 1; i++) {
+          for (let i = 0; i < startRange; i++) {
             this.editor.addLineClass(i, "background", "unmodifiable-line");
           }
-          for (let i = this.snippet.range.end; i < this.snippet.countLines(); i++) {
+          for (let i = endRange; i < countLines; i++) {
             this.editor.addLineClass(i, "background", "unmodifiable-line");
           }
         });
@@ -1208,9 +1240,10 @@ println('Hello, Playground!')
       this.runCode();
     }
     runCode() {
+      var _a;
       this.clearTerminal();
       this.writeToTerminal("Running code...");
-      const code = this.editor.getCode();
+      const code = (_a = this.editor.snippet) == null ? void 0 : _a.getRunnableCode();
       CodeRunner.runCode(code).then((result) => {
         this.clearTerminal();
         this.writeToTerminal(result.output);
@@ -1222,9 +1255,10 @@ println('Hello, Playground!')
       });
     }
     runTests() {
+      var _a;
       this.clearTerminal();
       this.writeToTerminal("Running tests...");
-      const code = this.editor.getCode();
+      const code = (_a = this.editor.snippet) == null ? void 0 : _a.getRunnableCode();
       CodeRunner.runTest(code).then((result) => {
         this.clearTerminal();
         this.writeToTerminal(result.output);
@@ -1307,3 +1341,4 @@ println('Hello, Playground!')
   }
   window.Playground = Playground;
 })();
+//# sourceMappingURL=vlang-playground.js.map

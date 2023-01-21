@@ -1,6 +1,6 @@
 import {CodeRepository, LocalCodeRepository, SharedCodeRepository} from "../Repositories"
 import {Terminal} from "../Terminal/Terminal"
-import {ITheme} from "../themes/interface"
+import {ITheme} from "../themes"
 import {Snippet, SnippetState} from "../Snippet"
 import {EditorConfiguration} from "codemirror"
 
@@ -52,7 +52,8 @@ export class Editor {
             }
 
             this.snippet = new Snippet(code)
-            this.setCode(this.snippet.code())
+            this.snippet.registerCurrentCodeObtainer(() => this.editor.getValue())
+            this.setCode(this.snippet.getCode())
         })
 
         const terminalElement = wrapper.querySelector(".js-terminal") as HTMLElement
@@ -95,8 +96,8 @@ export class Editor {
         }
     }
 
-    public getCode() {
-        return this.snippet?.original ?? ""
+    public getCode(): string {
+        return this.snippet?.getCode()!
     }
 
     public saveCode() {
@@ -115,12 +116,17 @@ export class Editor {
         }
 
         this.snippet.toggle()
-        this.setCode(this.snippet.code())
+        this.setCode(this.snippet.getCode())
 
         if (this.snippet.state == SnippetState.Unfolded) {
+            const code = this.snippet.getCode()
+            const countLines = code.split("\n").length
+            const startRange = this.snippet.range.start
+            const endRange = countLines - this.snippet.range.startFromEnd
+
             this.editor.markText(
                 {line: 0, ch: 0},
-                {line: this.snippet.range.start - 1, ch: 0},
+                {line: startRange, ch: 0},
                 {
                     readOnly: true,
                     inclusiveLeft: true,
@@ -129,8 +135,8 @@ export class Editor {
             )
 
             this.editor.markText(
-                {line: this.snippet.range.end, ch: 0},
-                {line: this.snippet.countLines(), ch: 0},
+                {line: endRange, ch: 0},
+                {line: countLines, ch: 0},
                 {
                     readOnly: true,
                     inclusiveLeft: true,
@@ -139,11 +145,11 @@ export class Editor {
             )
 
             this.editor.operation(() => {
-                for (let i = 0; i < this.snippet!.range.start - 1; i++) {
+                for (let i = 0; i < startRange; i++) {
                     this.editor.addLineClass(i, "background", "unmodifiable-line")
                 }
 
-                for (let i = this.snippet!.range.end; i < this.snippet!.countLines(); i++) {
+                for (let i = endRange; i < countLines; i++) {
                     this.editor.addLineClass(i, "background", "unmodifiable-line")
                 }
             })

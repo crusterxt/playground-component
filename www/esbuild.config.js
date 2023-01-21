@@ -38,6 +38,7 @@ const codeResult = esbuild.build({
   // keepNames: false,
   metafile: true,
   outfile: path.resolve(__dirname, "./public/vlang-playground.js"),
+  sourcemap: true,
   platform: "browser",
   target: "es6",
   external: ["codemirror"],

@@ -193,7 +193,7 @@ export class Playground {
         this.clearTerminal()
         this.writeToTerminal("Running code...")
 
-        const code = this.editor.getCode()
+        const code = this.editor.snippet?.getRunnableCode()!
         CodeRunner.runCode(code)
             .then(result => {
                 this.clearTerminal()
@@ -211,7 +211,7 @@ export class Playground {
         this.clearTerminal()
         this.writeToTerminal("Running tests...")
 
-        const code = this.editor.getCode()
+        const code = this.editor.snippet?.getRunnableCode()!
         CodeRunner.runTest(code)
             .then(result => {
                 this.clearTerminal()

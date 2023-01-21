@@ -34,7 +34,7 @@ if (selector) {
                 showFoldedCodeButton: showFoldedCodeButton === "true",
                 showFooter: showFooter === "true",
                 customRunButton: customRunButton ?? undefined,
-                server: server ?? undefined,
+                server: server ?? "https://play.vlang.foundation/",
             })
         })
     })

@@ -1,6 +1,6 @@
 {
   "name": "vlang-playground",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "Self-contained component to embed in websites for running V code",
   "license": "MIT",
   "keywords": [

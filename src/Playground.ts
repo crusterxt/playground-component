@@ -51,7 +51,7 @@ export class Playground {
         const code = config.code ?? this.playgroundElement.textContent ?? ""
         this.mount(this.playgroundElement)
 
-        const theme = this.playgroundElement.getAttribute("data-theme") ?? "dark"
+        const theme = this.playgroundElement.getAttribute("data-theme") ?? "light"
 
         this.runAsTests = config.configuration === "tests"
         this.repository = new TextCodeRepository(code)

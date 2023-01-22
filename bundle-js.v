@@ -4,12 +4,12 @@ module main
 import os
 
 files := [
-	'../codemirror/codemirror.js',
-	'../codemirror/closebrackets.js',
-	'../codemirror/comment.js',
-	'../codemirror/continuecomment.js',
-	'../codemirror/matchbrackets.js',
-	'../codemirror/show-hint.js',
+	'./codemirror/codemirror.js',
+	'./codemirror/closebrackets.js',
+	'./codemirror/comment.js',
+	'./codemirror/continuecomment.js',
+	'./codemirror/matchbrackets.js',
+	'./codemirror/show-hint.js',
 	'./public/playground.js',
 ]
 
@@ -19,7 +19,7 @@ contents := files
 	})
 	.join('\n')
 
-bundle_path := "../dist/vlang-playground.js"
+bundle_path := "./dist/vlang-playground.js"
 os.write_file(bundle_path, contents) or { panic(err) }
 
 result := os.execute('npx uglifyjs --output ${bundle_path} ${bundle_path}')

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <title>V Playground: Run, Edit, Share V Code Online</title>
@@ -14,8 +14,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link rel="stylesheet" href="highlight.css">
-<!--        <link rel="stylesheet" href="https://unpkg.com/vlang-playground@1/dist/vlang-playground.css">-->
-    <link rel="stylesheet" href="../../dist/vlang-playground.css">
+<!--    <link rel="stylesheet" href="https://unpkg.com/vlang-playground@1/dist/vlang-playground.css">-->
+<!--    <link rel="stylesheet" href="../dist/vlang-playground.css">-->
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -27,10 +27,32 @@
         box-sizing: border-box;
     }
 
+    html[data-theme="dark"] {
+        --text: #b0b0b0;
+        --background: #1e1f22;
+        --code-background: #2d2d2d;
+    }
+
+    html {
+        --text: #000;
+        --background: #fff;
+        --code-background: #eef0f3;
+    }
+
+    body {
+        background-color: var(--background);
+        color: var(--text);
+
+        line-height: 1.7;
+        font-family: Inter, serif;
+    }
+
     article {
         box-sizing: border-box;
         max-width: 800px;
         margin: 0 auto;
+
+        font-family: Inter,serif;
     }
 
     pre {
@@ -69,16 +91,26 @@
     }
 
     code.inline {
-        background-color: #eef0f3;
+        background-color: var(--code-background);
         border-radius: 5px;
         padding: 3px 7px;
+    }
+
+    h3 {
+        color: #12b981;
+        margin-left: -18px;
+    }
+
+    h3 span {
+        color: #6c6c6c;
+        font-weight: 400;
     }
 </style>
 
 <article>
-    <h1>V Embedded Playground</h1>
+<!--    <h1>V Embedded Playground</h1>-->
 
-    <p>Add next HTML:</p>
+<!--    <p>Add next HTML:</p>-->
 
 <!--    <pre><code class="hljs language-html">&lt;script src="./vlang-playground.js" data-selector=".vlang-code">&lt;/script>-->
 
@@ -104,7 +136,7 @@
 <!--        }-->
 <!--&lt;/div></code></pre>-->
 
-    <p>and you will get:</p>
+<!--    <p>and you will get:</p>-->
 
 <!--    <div class="vlang-code"-->
 <!--         data-server="https://play.vlang.foundation/"-->
@@ -116,29 +148,66 @@
 <!--        }-->
 <!--    </div>-->
 
-    <div class="vlang-code"
-         data-theme="light"
-         data-server="https://play.vlang.foundation/"
-         data-font-size="14px"
-         data-configuration="tests"
-         data-highlight-only="false">
-        fn test_fib() {
-            assert fib(4) == 3
+<!--    <div class="vlang-code"-->
+<!--         data-theme="light"-->
+<!--         data-server="https://play.vlang.foundation/"-->
+<!--         data-font-size="14px"-->
+<!--         data-configuration="tests"-->
+<!--         data-highlight-only="false">-->
+<!--        fn test_fib() {-->
+<!--            assert fib(4) == 3-->
+<!--        }-->
+
+<!--        fn fib(n int) u64 {-->
+<!--            //code::start-->
+<!--            mut f := []u64{len: n + 2}-->
+<!--            f[0] = 0-->
+<!--            f[1] = 1-->
+<!--            //code::end-->
+
+<!--            for i := 2; i <= n; i++ {-->
+<!--                f[i] = f[i - 1] + f[i - 2]-->
+<!--            }-->
+
+<!--            return f[n]-->
+<!--        }-->
+<!--    </div>-->
+
+    <h2>Write interactive articles</h2>
+
+    <p>With interactive V Playground.</p>
+
+    <br>
+    <br>
+
+    <h3>
+        <span>#</span>
+        Functions
+    </h3>
+
+    <p>
+        In V, functions are declared with the <code class="inline" style="color: #cc7832;">fn</code> keyword.
+        Let's write a function that calculates the sum of two numbers.
+        The following code gives an error, we need to complete it.
+    </p>
+
+    <p>
+        Return sum of <code class="inline">a</code> and <code class="inline">b</code> using
+        <code class="inline" style="color: #cc7832;">return</code> keyword.
+    </p>
+
+    <br>
+
+    <div class="vlang-code" data-theme="dark" data-configuration="tests">
+        fn test_sum() {
+            assert sum(2, 2) == 4
         }
 
-        fn fib(n int) u64 {
-            //code::start
-            mut f := []u64{len: n + 2}
-            f[0] = 0
-            f[1] = 1
-            //code::end
-
-            for i := 2; i <= n; i++ {
-                f[i] = f[i - 1] + f[i - 2]
-            }
-
-            return f[n]
+        //code::start
+        fn sum(a int, b int) int {
+            // write code here
         }
+        //code::end
     </div>
 
     <br>
@@ -193,7 +262,7 @@
 </body>
 
 <!--<script src="https://unpkg.com/vlang-playground@1.0.7" data-selector=".vlang-code" data-font-size="14px"></script>-->
-<script src="../../dist/vlang-playground.js" data-selector=".vlang-code" data-font-size="14px"></script>
+<script src="../dist/vlang-playground.js" data-selector=".vlang-code" data-font-size="14px"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script src="javascript.min.js"></script>

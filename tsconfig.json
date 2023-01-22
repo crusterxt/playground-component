@@ -9,7 +9,7 @@
     ],
     "strict": true,
     "skipLibCheck": true,
-    "baseUrl": "."
+    "baseUrl": "./src"
   },
   "files": [
     "src/main.ts",

@@ -13,9 +13,9 @@ const styleResult = esbuild.buildSync({
   bundle: true,
   minify: true,
   metafile: true,
-  outfile: path.resolve(__dirname, "../dist/vlang-playground.css"),
+  outfile: path.resolve(__dirname, "./dist/vlang-playground.css"),
   target: "esnext",
-  entryPoints: ["./css/index.css"],
+  entryPoints: ["./src/css/index.css"],
   loader: {
     '.svg': 'base64',
   },

@@ -15,7 +15,7 @@ const styleResult = esbuild.build({
   metafile: true,
   outfile: path.resolve(__dirname, "./public/vlang-playground.css"),
   target: "esnext",
-  entryPoints: ["./css/index.css"],
+  entryPoints: ["./src/css/index.css"],
   loader: {
     '.svg': 'base64',
   },

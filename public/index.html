@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="highlight.css">
 <!--    <link rel="stylesheet" href="https://unpkg.com/vlang-playground@1/dist/vlang-playground.css">-->
 <!--    <link rel="stylesheet" href="../dist/vlang-playground.css">-->
+    <link rel="stylesheet" href="vlang-playground.css">
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -198,13 +199,23 @@
 
     <br>
 
-    <div class="vlang-code" data-theme="dark" data-configuration="tests">
+    <div class="vlang-code" data-theme="light" data-configuration="tests">
         fn test_sum() {
             assert sum(2, 2) == 4
         }
 
         //code::start
+        [noinit]
+        [another: value]
+        [another: value; sss]
+        [sss; sss]
+        [another: value1; unsafe: value2]
+        [if some ?]
         fn sum(a int, b int) int {
+
+            [100]
+            a.name
+
             // write code here
         }
         //code::end
@@ -262,7 +273,15 @@
 </body>
 
 <!--<script src="https://unpkg.com/vlang-playground@1.0.7" data-selector=".vlang-code" data-font-size="14px"></script>-->
-<script src="../dist/vlang-playground.js" data-selector=".vlang-code" data-font-size="14px"></script>
+<!--<script src="../dist/vlang-playground.js" data-selector=".vlang-code" data-font-size="14px"></script>-->
+
+<script src="../codemirror/codemirror.js"></script>
+<script src="../codemirror/closebrackets.js"></script>
+<script src="../codemirror/comment.js"></script>
+<script src="../codemirror/continuecomment.js"></script>
+<script src="../codemirror/matchbrackets.js"></script>
+<script src="../codemirror/show-hint.js"></script>
+<script src="./playground.js" data-selector=".vlang-code" data-font-size="14px"></script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script src="javascript.min.js"></script>

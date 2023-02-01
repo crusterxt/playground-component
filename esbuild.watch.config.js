@@ -1,5 +1,6 @@
 const path = require("path");
 const esbuild = require("esbuild");
+const { exec } = require("child_process");
 
 function printResult(result) {
   Object.keys(result).forEach((fileName) => {
@@ -50,6 +51,18 @@ const codeResult = esbuild.build({
       } else {
         console.log('watch build succeeded:', result)
       }
+
+      exec("v run ./bundle-js.v", (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+      })
     },
   },
 });

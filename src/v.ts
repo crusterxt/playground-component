@@ -103,6 +103,7 @@ export const keywords: Set<string> = new Set<string>([
     "union",
     "unsafe",
     "volatile",
+    "__global",
     "__offsetof",
 ])
 

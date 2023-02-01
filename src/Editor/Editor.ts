@@ -168,6 +168,7 @@ export class Editor {
 
     public setTheme(theme: ITheme) {
         this.editor.setOption("theme", theme.name())
+        this.wrapperElement?.setAttribute("data-theme", theme.name())
     }
 
     public showCompletion() {

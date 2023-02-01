@@ -5,6 +5,8 @@ import {CodeRunner, RunCodeResult} from "./CodeRunner/CodeRunner"
 import {collapseSnippetIcons, expandSnippetIcons, template} from "./template"
 import {ThemeManager} from "./ThemeManager/ThemeManager"
 import {SnippetState} from "./Snippet"
+import {ITheme} from "./themes"
+import {definedProps, toBool} from "./utils"
 
 /**
  * PlaygroundDefaultAction describes the default action of a playground.
@@ -17,6 +19,7 @@ export interface PlaygroundConfig {
     selector?: string
     element?: HTMLElement
     code?: string
+    theme?: string
     configuration?: string
     fontSize?: string
     showLineNumbers?: boolean
@@ -51,8 +54,6 @@ export class Playground {
         const code = config.code ?? this.playgroundElement.textContent ?? ""
         this.mount(this.playgroundElement)
 
-        const theme = this.playgroundElement.getAttribute("data-theme") ?? "light"
-
         this.runAsTests = config.configuration === "tests"
         this.repository = new TextCodeRepository(code)
         const editorElement = this.playgroundElement.querySelector(".v-playground") as HTMLElement
@@ -62,10 +63,10 @@ export class Playground {
             this.editor.setEditorFontSize(config.fontSize)
         }
 
+        const theme = config.theme ?? "light"
         this.themeManager = new ThemeManager(ThemeManager.findTheme(theme))
         this.themeManager.registerOnChange((theme) => {
-            this.editor.setTheme(theme)
-            editorElement?.setAttribute("data-theme", theme.name())
+            this.setThemeImpl(theme)
         })
         this.themeManager.loadTheme()
 
@@ -109,6 +110,14 @@ export class Playground {
         }
     }
 
+    private setTheme(name: string) {
+        this.setThemeImpl(ThemeManager.findTheme(name))
+    }
+
+    private setThemeImpl(theme: ITheme) {
+        this.editor.setTheme(theme)
+    }
+
     private setupPlaygroundLink() {
         const playgroundLink = this.playgroundElement.querySelector(".js-playground-link") as HTMLElement
         playgroundLink.addEventListener("click", () => {
@@ -120,28 +129,47 @@ export class Playground {
         })
     }
 
-    public static create(element: HTMLElement, code?: string): Playground {
-        const configuration = element?.getAttribute("data-configuration") ?? "run"
-        const fontSize = element.getAttribute("data-font-size") ?? "12px"
-        const showLineNumbers = element?.getAttribute("data-show-line-numbers") ?? "true"
-        const highlightOnly = element.getAttribute("data-highlight-only") ?? "false"
-        const showFoldedCodeButton = element?.getAttribute("data-show-folded-code-button") ?? "true"
-        const showFooter = element?.getAttribute("data-show-footer") ?? "true"
-        const customRunButton = element?.getAttribute("data-custom-run-button")
-        const server = element?.getAttribute("data-server")
+    public static create(element: HTMLElement, config: PlaygroundConfig): Playground {
+        const defaultConfiguration = this.getDefaultConfiguration()
+        const configuration = this.getConfigurationFromElement(element)
+        return new Playground({...defaultConfiguration, ...definedProps(config), ...definedProps(configuration), element: element})
+    }
 
-        return new Playground({
-            element: element,
-            code: code,
+    public static getDefaultConfiguration(): PlaygroundConfig {
+        return {
+            configuration: PlaygroundDefaultAction.RUN,
+            theme: "light",
+            fontSize: "12px",
+            showLineNumbers: true,
+            highlightOnly: false,
+            showFoldedCodeButton: true,
+            showFooter: true,
+            server: "https://play.vlang.foundation/",
+        }
+    }
+
+    public static getConfigurationFromElement(element: Element): PlaygroundConfig {
+        const configuration = element?.getAttribute("data-configuration") ?? undefined
+        const theme = element?.getAttribute("data-theme") ?? undefined
+        const fontSize = element.getAttribute("data-font-size") ?? undefined
+        const showLineNumbers = toBool(element?.getAttribute("data-show-line-numbers"))
+        const highlightOnly = toBool(element.getAttribute("data-highlight-only"))
+        const showFoldedCodeButton = toBool(element?.getAttribute("data-show-folded-code-button"))
+        const showFooter = toBool(element.getAttribute("data-show-footer"))
+        const customRunButton = element?.getAttribute("data-custom-run-button") ?? undefined
+        const server = element?.getAttribute("data-server") ?? undefined
+
+        return {
             configuration: configuration,
+            theme: theme,
             fontSize: fontSize,
-            showLineNumbers: showLineNumbers === "true",
-            highlightOnly: highlightOnly === "true",
-            showFoldedCodeButton: showFoldedCodeButton === "true",
-            showFooter: showFooter === "true",
-            customRunButton: customRunButton ?? undefined,
-            server: server ?? "https://play.vlang.foundation/",
-        })
+            showLineNumbers: showLineNumbers,
+            highlightOnly: highlightOnly,
+            showFoldedCodeButton: showFoldedCodeButton,
+            showFooter: showFooter,
+            customRunButton: customRunButton,
+            server: server,
+        }
     }
 
     public registerOnSuccessfulRun(callback: () => void): void {

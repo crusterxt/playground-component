@@ -143,7 +143,7 @@ function getCompletions(token: Token, knownImports: Set<string>, context: Token[
         const variantText = variant.text
 
         // if no matching text, ignore
-        if (variantText.indexOf(tokenValue) === -1) {
+        if (!variantText.startsWith(tokenValue)) {
             return
         }
 

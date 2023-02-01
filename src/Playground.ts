@@ -129,10 +129,10 @@ export class Playground {
         })
     }
 
-    public static create(element: HTMLElement, config: PlaygroundConfig): Playground {
+    public static create(element: HTMLElement, config?: PlaygroundConfig): Playground {
         const defaultConfiguration = this.getDefaultConfiguration()
         const configuration = this.getConfigurationFromElement(element)
-        return new Playground({...defaultConfiguration, ...definedProps(config), ...definedProps(configuration), element: element})
+        return new Playground({...defaultConfiguration, ...definedProps(config ?? {}), ...definedProps(configuration), element: element})
     }
 
     public static getDefaultConfiguration(): PlaygroundConfig {

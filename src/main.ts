@@ -15,7 +15,7 @@ if (selector) {
     })
 }
 
-initCss()
+// initCss()
 // @ts-ignore
 window.Playground = Playground
 

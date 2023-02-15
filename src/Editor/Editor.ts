@@ -75,7 +75,7 @@ export class Editor {
         })
         this.terminal.mount()
 
-        // this.closeTerminal()
+        this.closeTerminal()
     }
 
     public setEditorFontSize(size: string) {

@@ -43,13 +43,11 @@ export const template =
     </div>
     
     <div class="js-terminal playground__terminal">
-      <div class="header">
-        <button class="js-terminal__close-buttom terminal__close-button">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect class="close-terminal-button-rect" x="1" y="8" width="13" height="1"/>
-          </svg>
-        </button>
-      </div>
+      <button class="js-terminal__close-button terminal__close-button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect class="close-terminal-button-rect" x="1" y="8" width="13" height="1"/>
+        </svg>
+      </button>
       <pre class="js-terminal__output terminal__output"></pre>
     </div>
   </div>

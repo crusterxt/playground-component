@@ -15,15 +15,5 @@ if (selector) {
     })
 }
 
-// initCss()
 // @ts-ignore
 window.Playground = Playground
-
-function initCss() {
-    const head = document.head
-    const link = document.createElement("link")
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    link.href = 'https://unpkg.com/vlang-playground@1.0.22/dist/vlang-playground.css';
-    head.appendChild(link);
-}

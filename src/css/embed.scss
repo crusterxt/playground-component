@@ -3,6 +3,9 @@
 @import "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap";
 
 .v-playground[data-theme='light'] {
+  --theme-color: #ff6b00;
+  --theme-color-dark: #cc5307;
+
   --background-color: #fff;
   --text-color: #000;
   --header-background-color: #f7f8fa;
@@ -21,6 +24,8 @@
   --terminal-ok: #36b639;
   --terminal-error: #c02929;
 
+  --show-all-button-color: #ecedf1;
+
   --playground-link: #7e7d7d;
   --run-embeded-icon-color: #000000;
   --completion-variant-background: #cfdefd;
@@ -30,6 +35,9 @@
 }
 
 .v-playground[data-theme='dark'] {
+  --theme-color: #ff6b00;
+  --theme-color-dark: #cc5307;
+
   --background-color: #1e1f22;
   --text-color: #e0e0e0;
   --header-background-color: #2a2a2d;
@@ -47,6 +55,8 @@
   --terminal-background: #000;
   --terminal-ok: #6ea967;
   --terminal-error: #e04949;
+
+  --show-all-button-color: #4e5056;
 
   --playground-link: #b9b9b9;
   --run-embeded-icon-color: #fff;
@@ -150,7 +160,7 @@
   width: 17px;
   height: 17px;
   border-radius: 50%;
-  border: 1px solid #d4d4d4;
+  border: 1px solid var(--show-all-button-color);
   background-color: var(--background-color);
   line-height: 0.8;
   text-align: center;
@@ -160,17 +170,17 @@
     margin-top: -1px;
 
     line {
-      stroke: #d4d4d4;
+      stroke: var(--show-all-button-color);
     }
   }
 
   &:hover {
     cursor: pointer;
-    border: 1px solid #366ca1;
+    border: 1px solid var(--theme-color);
 
     svg {
       line {
-        stroke: #366ca1;
+        stroke: var(--theme-color);
       }
     }
   }
@@ -218,6 +228,10 @@
 
     opacity: 1;
     background-color: var(--header-button-hover);
+
+    svg {
+      stroke: var(--theme-color);
+    }
   }
 
   svg {

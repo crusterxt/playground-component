@@ -112,15 +112,9 @@ export class Editor {
         this.repository.saveCode(this.getCode())
     }
 
-    public copyCode() {
+    public copyCode(): Promise<void> {
         const code = this.getCode()
-        navigator.clipboard.writeText(code)
-            .then(r => {
-                this.terminal.write("Code copied to clipboard.")
-            })
-            .catch(e => {
-                this.terminal.write("Failed to copy code to clipboard.")
-            })
+        return navigator.clipboard.writeText(code)
     }
 
     public toggleSnippet() {

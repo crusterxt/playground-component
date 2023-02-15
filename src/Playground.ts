@@ -77,7 +77,20 @@ export class Playground {
         })
 
         this.registerAction(PlaygroundDefaultAction.COPY, () => {
-            this.editor.copyCode()
+            const promise = this.editor.copyCode()
+
+            // don't show the message if we are in highlight only mode
+            if (!config.highlightOnly) {
+                promise
+                    .then(r => {
+                        this.editor.terminal.clear()
+                        this.editor.terminal.write("Code copied to clipboard.")
+                    })
+                    .catch(e => {
+                        this.editor.terminal.clear()
+                        this.editor.terminal.write("Failed to copy code to clipboard.")
+                    })
+            }
         })
 
         this.registerAction("show-all", () => {
@@ -104,19 +117,21 @@ export class Playground {
             editorElement.classList.add("no-footer")
         }
 
+        const copyActionButton = this.getActionElement(PlaygroundDefaultAction.COPY)
+
         if (config.highlightOnly === true) {
             const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
             runActionButton.style.display = "none"
 
-            const copyActionButton = this.getActionElement(PlaygroundDefaultAction.COPY)
             if (config.showCopyButton === true) {
-                copyActionButton.style.display = "block"
                 copyActionButton.classList.remove("bottom")
-            } else {
-                copyActionButton.style.display = "none"
             }
 
             footer.style.display = "none"
+        }
+
+        if (!config.showCopyButton) {
+            copyActionButton.style.display = "none"
         }
 
         if (config.server !== undefined) {
@@ -146,7 +161,10 @@ export class Playground {
     public static create(element: HTMLElement, config?: PlaygroundConfig): Playground {
         const defaultConfiguration = this.getDefaultConfiguration()
         const configuration = this.getConfigurationFromElement(element)
-        return new Playground({...defaultConfiguration, ...definedProps(config ?? {}), ...definedProps(configuration), element: element})
+        return new Playground({
+            ...defaultConfiguration, ...definedProps(config ?? {}), ...definedProps(configuration),
+            element: element
+        })
     }
 
     public static getDefaultConfiguration(): PlaygroundConfig {

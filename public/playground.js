@@ -1000,6 +1000,7 @@ println('Hello, Playground!')
         return !line.trim().startsWith("Failed command");
       });
       this.terminal.mount();
+      this.closeTerminal();
     }
     setEditorFontSize(size) {
       const cm = this.wrapperElement.querySelector(".CodeMirror");
@@ -1028,6 +1029,14 @@ println('Hello, Playground!')
         this.repository = new LocalCodeRepository();
       }
       this.repository.saveCode(this.getCode());
+    }
+    copyCode() {
+      const code = this.getCode();
+      navigator.clipboard.writeText(code).then((r) => {
+        this.terminal.write("Code copied to clipboard.");
+      }).catch((e) => {
+        this.terminal.write("Failed to copy code to clipboard.");
+      });
     }
     toggleSnippet() {
       if (this.snippet === null) {
@@ -1167,6 +1176,18 @@ println('Hello, Playground!')
         </div>
       </div>
       
+      <div class="js-playground__action-copy copy-button bottom">
+         <svg xmlns='http://www.w3.org/2000/svg' 
+              fill='none' 
+              height='20' 
+              width='20' 
+              stroke='rgba(128,128,128,1)' 
+              stroke-width='2' 
+              viewBox='0 0 24 24'>
+              <path stroke-linecap='round' stroke-linejoin='round' d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2'/>
+         </svg>
+      </div>
+      
       <!-- Place for CodeMirror editor -->
       <textarea></textarea>
     </div>
@@ -1297,6 +1318,9 @@ println('Hello, Playground!')
       this.registerRunAction(config.customRunButton, () => {
         this.run();
       });
+      this.registerAction("copy" /* COPY */, () => {
+        this.editor.copyCode();
+      });
       this.registerAction("show-all", () => {
         var _a2;
         this.editor.toggleSnippet();
@@ -1320,6 +1344,13 @@ println('Hello, Playground!')
       if (config.highlightOnly === true) {
         const runActionButton = this.getActionElement("run" /* RUN */);
         runActionButton.style.display = "none";
+        const copyActionButton = this.getActionElement("copy" /* COPY */);
+        if (config.showCopyButton === true) {
+          copyActionButton.style.display = "block";
+          copyActionButton.classList.remove("bottom");
+        } else {
+          copyActionButton.style.display = "none";
+        }
         footer.style.display = "none";
       }
       if (config.server !== void 0) {
@@ -1357,6 +1388,7 @@ println('Hello, Playground!')
         highlightOnly: false,
         showFoldedCodeButton: true,
         showFooter: true,
+        showCopyButton: true,
         server: "https://play.vlang.foundation/"
       };
     }
@@ -1369,6 +1401,7 @@ println('Hello, Playground!')
       const highlightOnly = toBool(element.getAttribute("data-highlight-only"));
       const showFoldedCodeButton = toBool(element == null ? void 0 : element.getAttribute("data-show-folded-code-button"));
       const showFooter = toBool(element.getAttribute("data-show-footer"));
+      const showCopyButton = toBool(element.getAttribute("data-show-copy-button"));
       const customRunButton = (_d = element == null ? void 0 : element.getAttribute("data-custom-run-button")) != null ? _d : void 0;
       const server = (_e = element == null ? void 0 : element.getAttribute("data-server")) != null ? _e : void 0;
       return {
@@ -1380,6 +1413,7 @@ println('Hello, Playground!')
         showFoldedCodeButton,
         showFooter,
         customRunButton,
+        showCopyButton,
         server
       };
     }

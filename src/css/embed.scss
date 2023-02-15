@@ -194,6 +194,40 @@
   }
 }
 
+.copy-button {
+  position: absolute;
+
+  width: 30px;
+  height: 30px;
+
+  border-radius: 8px;
+  opacity: 0.4;
+
+  top: 10px;
+  right: 15px;
+
+  z-index: 100;
+
+  &.bottom {
+    top: unset;
+    bottom: 10px;
+  }
+
+  &:hover {
+    cursor: pointer;
+
+    opacity: 1;
+    background-color: var(--header-button-hover);
+  }
+
+  svg {
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
+    margin-top: 5px;
+    margin-left: 5px;
+  }
+}
+
 .CodeMirror {
   width: 100%;
   height: 100%;

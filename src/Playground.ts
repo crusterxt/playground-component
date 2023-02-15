@@ -13,6 +13,7 @@ import {definedProps, toBool} from "./utils"
  */
 export enum PlaygroundDefaultAction {
     RUN = "run",
+    COPY = "copy",
 }
 
 export interface PlaygroundConfig {
@@ -26,6 +27,7 @@ export interface PlaygroundConfig {
     highlightOnly?: boolean
     showFoldedCodeButton?: boolean
     showFooter?: boolean
+    showCopyButton?: boolean
     customRunButton?: string
     server?: string
 }
@@ -74,6 +76,10 @@ export class Playground {
             this.run()
         })
 
+        this.registerAction(PlaygroundDefaultAction.COPY, () => {
+            this.editor.copyCode()
+        })
+
         this.registerAction("show-all", () => {
             this.editor.toggleSnippet()
 
@@ -101,6 +107,14 @@ export class Playground {
         if (config.highlightOnly === true) {
             const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
             runActionButton.style.display = "none"
+
+            const copyActionButton = this.getActionElement(PlaygroundDefaultAction.COPY)
+            if (config.showCopyButton === true) {
+                copyActionButton.style.display = "block"
+                copyActionButton.classList.remove("bottom")
+            } else {
+                copyActionButton.style.display = "none"
+            }
 
             footer.style.display = "none"
         }
@@ -144,6 +158,7 @@ export class Playground {
             highlightOnly: false,
             showFoldedCodeButton: true,
             showFooter: true,
+            showCopyButton: true,
             server: "https://play.vlang.foundation/",
         }
     }
@@ -156,6 +171,7 @@ export class Playground {
         const highlightOnly = toBool(element.getAttribute("data-highlight-only"))
         const showFoldedCodeButton = toBool(element?.getAttribute("data-show-folded-code-button"))
         const showFooter = toBool(element.getAttribute("data-show-footer"))
+        const showCopyButton = toBool(element.getAttribute("data-show-copy-button"))
         const customRunButton = element?.getAttribute("data-custom-run-button") ?? undefined
         const server = element?.getAttribute("data-server") ?? undefined
 
@@ -168,6 +184,7 @@ export class Playground {
             showFoldedCodeButton: showFoldedCodeButton,
             showFooter: showFooter,
             customRunButton: customRunButton,
+            showCopyButton: showCopyButton,
             server: server,
         }
     }

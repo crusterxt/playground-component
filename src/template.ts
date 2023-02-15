@@ -38,6 +38,18 @@ export const template =
         </div>
       </div>
       
+      <div class="js-playground__action-copy copy-button bottom">
+         <svg xmlns='http://www.w3.org/2000/svg' 
+              fill='none' 
+              height='20' 
+              width='20' 
+              stroke='rgba(128,128,128,1)' 
+              stroke-width='2' 
+              viewBox='0 0 24 24'>
+              <path stroke-linecap='round' stroke-linejoin='round' d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2'/>
+         </svg>
+      </div>
+      
       <!-- Place for CodeMirror editor -->
       <textarea></textarea>
     </div>

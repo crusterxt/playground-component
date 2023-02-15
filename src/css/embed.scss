@@ -58,18 +58,26 @@
 
 .v-playground {
   --font-size: 12px;
+
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: calc(100% - 27px) 27px;
+  overflow: hidden;
+  padding-top: 10px;
+
   font-family: Inter, sans-serif;
   position: relative;
   background-color: var(--background-color);
+  width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-rows: 1fr 27px;
 
   * {
     box-sizing: border-box;
   }
 
   .playground__wrapper {
+    position: relative;
+    max-width: 100%;
     border: 1px solid var(--terminal-header-border);
   }
 
@@ -193,6 +201,15 @@
   font-size: var(--font-size);
   line-height: 1.57;
   background-color: var(--background-color);
+}
+
+.CodeMirror-scroll {
+  width: 100%;
+}
+
+.CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 5px;
 }
 
 .CodeMirror-line {

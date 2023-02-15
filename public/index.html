@@ -199,26 +199,30 @@
 
     <br>
 
-    <div class="vlang-code" data-configuration="tests" data-theme="light">
-        fn test_sum() {
-            assert sum(2, 2) == 4
-        }
+    <div class="wrapper" style="width: 250px; max-height: 500px">
+        <div class="vlang-code" data-configuration="tests" data-theme="dark">
+            fn test_sum() {
+                assert sum(2, 2) == 4
+            }
 
-        //code::start
-        [noinit]
-        [another: value]
-        [another: value; sss]
-        [sss; sss]
-        [another: value1; unsafe: value2]
-        [if some ?]
-        fn sum(a int, b int) int {
+            //code::start
+            [noinit]
+            [another: value]
+            [another: value; sss]
+            [sss; sss]
+            [another: value1; unsafe: value2]
+            [if some ?]
+            fn sum(a int, b int) int {
 
-            [100]
-            a.name
+                [100]
+                a.name
 
-            // write code here
-        }
-        //code::end
+                // write code here
+            }
+            //code::end
+        </div>
+    </div>
+
     </div>
 
     <br>
@@ -276,19 +280,20 @@
 <!--<script src="../dist/vlang-playground.js" data-selector=".vlang-code" data-font-size="14px"></script>-->
 
 <script src="../codemirror/codemirror.js"></script>
+<script src="../codemirror/simplescrollbars.js"></script>
 <script src="../codemirror/closebrackets.js"></script>
 <script src="../codemirror/comment.js"></script>
 <script src="../codemirror/continuecomment.js"></script>
 <script src="../codemirror/matchbrackets.js"></script>
 <script src="../codemirror/show-hint.js"></script>
-<script src="./playground.js" data-font-size="14px" data-theme="dark"></script>
+<script src="./playground.js" data-selector=".vlang-code" data-font-size="14px" data-theme="dark"></script>
 <script>
-    const element = document.querySelector('.vlang-code')
-    const playground = Playground.create(element, {
-        fontSize: '14px',
-        showLineNumbers: false,
-    })
-    playground.setTheme("dark")
+    // const element = document.querySelector('.vlang-code')
+    // const playground = Playground.create(element, {
+    //     fontSize: '14px',
+    //     showLineNumbers: false,
+    // })
+    // playground.setTheme("dark")
 </script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>

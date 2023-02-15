@@ -36,6 +36,8 @@ export class Editor {
             },
             theme: "dark",
             readOnly: readonly ? "nocursor" : false,
+            // @ts-ignore
+            scrollbarStyle: "overlay",
         }
 
         this.wrapperElement = wrapper

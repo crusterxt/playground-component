@@ -4,6 +4,7 @@ module main
 import os
 
 files := [
+	'./codemirror/simplescrollbars.js',
 	'./codemirror/codemirror.js',
 	'./codemirror/closebrackets.js',
 	'./codemirror/comment.js',
@@ -22,8 +23,8 @@ contents := files
 bundle_path := "./dist/vlang-playground.js"
 os.write_file(bundle_path, contents) or { panic(err) }
 
-result := os.execute('npx uglifyjs --output ${bundle_path} ${bundle_path}')
-if result.exit_code != 0 {
-	println(result.output)
-	panic('npx uglifyjs failed')
-}
+// result := os.execute('npx uglifyjs --output ${bundle_path} ${bundle_path}')
+// if result.exit_code != 0 {
+// 	println(result.output)
+// 	panic('npx uglifyjs failed')
+// }

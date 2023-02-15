@@ -967,7 +967,9 @@ println('Hello, Playground!')
           padding: " "
         },
         theme: "dark",
-        readOnly: readonly ? "nocursor" : false
+        readOnly: readonly ? "nocursor" : false,
+        // @ts-ignore
+        scrollbarStyle: "overlay"
       };
       this.wrapperElement = wrapper;
       const place = wrapper.querySelector("textarea");

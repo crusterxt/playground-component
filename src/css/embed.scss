@@ -32,6 +32,10 @@
   --completion-variant-color: #000;
   --completion-module-icon: url("../../images/module-light.svg");
   --completion-type-icon: url("../../images/type-light.svg");
+
+  --copy-button-ok-color: #12b981;
+  --copy-button-error-color: #e04949;
+  --copy-button-background: #ecedf1;
 }
 
 .v-playground[data-theme='dark'] {
@@ -64,6 +68,10 @@
   --completion-variant-color: #b4b8c0;
   --completion-module-icon: url("../../images/module.svg");
   --completion-type-icon: url("../../images/type.svg");
+
+  --copy-button-ok-color: #12b981;
+  --copy-button-error-color: #e04949;
+  --copy-button-background: #000;
 }
 
 .v-playground {
@@ -223,6 +231,47 @@
     bottom: 10px;
   }
 
+  &.copy-success {
+    outline: 1px solid var(--copy-button-ok-color);
+
+    svg {
+      stroke: var(--copy-button-ok-color) !important;
+    }
+
+    &:before {
+      content: "Copied";
+      position: absolute;
+      left: calc(-100% - 10px);
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--copy-button-ok-color);
+      background-color: var(--copy-button-background);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+  }
+
+  &.copy-error {
+    outline: 1px solid var(--copy-button-error-color);
+
+    svg {
+      stroke: var(--copy-button-error-color) !important;
+    }
+
+    &:before {
+      content: "Error (see terminal)";
+      position: absolute;
+      width: max-content;
+      left: calc(-100% - 50px);
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--copy-button-error-color);
+      background-color: var(--copy-button-background);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+  }
+
   &:hover {
     cursor: pointer;
 
@@ -274,9 +323,7 @@
 
 .playground__terminal {
   position: relative;
-  min-height: 100px;
-  display: grid;
-  grid-template-rows: max-content auto;
+  min-height: 50px;
   background-color: var(--terminal-background);
   border-top: 1px solid var(--terminal-header-border);
 

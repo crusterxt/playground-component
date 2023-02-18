@@ -78,19 +78,26 @@ export class Playground {
 
         this.registerAction(PlaygroundDefaultAction.COPY, () => {
             const promise = this.editor.copyCode()
+            const copyActionButton = this.getActionElement(PlaygroundDefaultAction.COPY)
 
-            // don't show the message if we are in highlight only mode
-            if (!config.highlightOnly) {
-                promise
-                    .then(r => {
-                        this.editor.terminal.clear()
-                        this.editor.terminal.write("Code copied to clipboard.")
-                    })
-                    .catch(e => {
-                        this.editor.terminal.clear()
-                        this.editor.terminal.write("Failed to copy code to clipboard.")
-                    })
-            }
+            promise
+                .then(r => {
+                    copyActionButton.classList.add("copy-success")
+                    setTimeout(() => {
+                        copyActionButton.classList.remove("copy-success")
+                    }, 1000)
+                })
+                .catch(e => {
+                    copyActionButton.classList.add("copy-error")
+                    setTimeout(() => {
+                        copyActionButton.classList.remove("copy-error")
+                    }, 1000)
+
+                    console.log(e)
+                    this.editor.terminal.clear()
+                    this.editor.terminal.write("Failed to copy code to clipboard.")
+                    this.editor.terminal.write(e)
+                })
         })
 
         this.registerAction("show-all", () => {

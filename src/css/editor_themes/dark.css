@@ -2,7 +2,7 @@
     color: #BBBBBB;
 }
 
-.cm-s-dark .cm-keyword, .cm-valid-escape { color: #CC7832; }
+.cm-s-dark .cm-keyword, .cm-s-dark .cm-valid-escape { color: #CC7832; }
 .cm-s-dark .cm-builtin { color: #CC7832; }
 .cm-s-dark .cm-atom { color: #CC7832; }
 .cm-s-dark .cm-number { color: #6897BB; }

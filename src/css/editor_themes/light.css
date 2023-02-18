@@ -1,4 +1,4 @@
-.cm-s-light .cm-keyword { color: #0033b3; }
+.cm-s-light .cm-keyword, .cm-valid-escape { color: #0033b3; }
 .cm-s-light .cm-builtin { color: #0033b3; }
 .cm-s-light .cm-atom { color: #219; }
 .cm-s-light .cm-number { color: #1750EB; }

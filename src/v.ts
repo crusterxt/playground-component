@@ -177,6 +177,17 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
             return state.tokenize(stream, state)
         }
 
+        // r'foo' or c'foo'
+        // r"foo" or c"foo"
+        if ((ch === "r" || ch === "c") && (stream.peek() == "\"" || stream.peek() == "'")) {
+            const next = stream.next()
+            if (next === null) {
+                return "string"
+            }
+            state.tokenize = tokenRawString(next as Quota)
+            return "string"
+        }
+
         if (ch === ".") {
             if (!stream.match(/^[0-9]+([eE][\-+]?[0-9]+)?/)) {
                 return "operator"
@@ -270,7 +281,12 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
         if (keywords.has(cur)) return "keyword"
         if (pseudoKeywords.has(cur)) return "keyword"
         if (atoms.has(cur)) return "atom"
-        if (builtinTypes.has(cur)) return "builtin"
+
+        if (!wasDot) {
+            // don't highlight `foo.int()`
+            //                      ^^^ as builtin
+            if (builtinTypes.has(cur)) return "builtin"
+        }
 
         if (cur.length > 0 && cur[0].toUpperCase() === cur[0]) {
             return "type"
@@ -371,6 +387,22 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
         return "string"
     }
 
+    function tokenNextEscape(stream: StringStream, state: ModeState) {
+        let next = stream.next()
+        if (next === "\\") {
+            stream.next()
+            state.tokenize = tokenString(state.context.stringQuote)
+            // we already know that next char is valid escape
+            return "valid-escape"
+        }
+
+        return "string"
+    }
+
+    function isValidEscapeChar(ch: string) {
+        return ch === "n" || ch === "t" || ch === "r" || ch === "\\" || ch === "\"" || ch === "\'" || ch === "0"
+    }
+
     function tokenString(quote: Quota | null) {
         return function (stream: StringStream, state: ModeState) {
             state.context.insideString = true
@@ -394,6 +426,38 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
                     state.tokenize = tokenNextInterpolation
                     stream.backUp(1)
                     return "string"
+                }
+                if (escaped && isValidEscapeChar(next)) {
+                    stream.backUp(2)
+                    state.tokenize = tokenNextEscape
+                    return "string"
+                }
+                escaped = !escaped && next === "\\"
+            }
+
+            if (end || escaped) {
+                state.tokenize = tokenBase
+            }
+
+            state.context.insideString = false
+            state.context.stringQuote = null
+            return "string"
+        }
+    }
+
+    function tokenRawString(quote: Quota | null) {
+        return function (stream: StringStream, state: ModeState) {
+            state.context.insideString = true
+            state.context.stringQuote = quote
+
+            let next: string | null = ""
+            let escaped = false
+            let end = false
+
+            while ((next = stream.next()) != null) {
+                if (next === quote && !escaped) {
+                    end = true
+                    break
                 }
                 escaped = !escaped && next === "\\"
             }

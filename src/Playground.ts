@@ -43,6 +43,8 @@ export class Playground {
     private readonly runAsTests: boolean
     private onSuccessfulRun: (() => void)[] = []
     private onFailedRun: (() => void)[] = []
+    private onTerminalOpen: (() => void)[] = [];
+    private onTerminalClose: (() => void)[] = [];
 
     constructor(config: PlaygroundConfig) {
         if (config.selector) {
@@ -64,6 +66,14 @@ export class Playground {
         if (config.fontSize) {
             this.editor.setEditorFontSize(config.fontSize)
         }
+
+        this.editor.registerOnTerminalOpen(() => {
+            this.onTerminalOpen.forEach(callback => callback())
+        })
+
+        this.editor.registerOnTerminalClose(() => {
+            this.onTerminalClose.forEach(callback => callback())
+        })
 
         const theme = config.theme ?? "light"
         this.themeManager = new ThemeManager(ThemeManager.findTheme(theme))
@@ -331,6 +341,14 @@ export class Playground {
         }
     }
 
+    public registerOnTerminalOpen(callback: () => void): void {
+        this.onTerminalOpen.push(callback)
+    }
+
+    public registerOnTerminalClose(callback: () => void): void {
+        this.onTerminalClose.push(callback)
+    }
+
     public setupShortcuts(): void {
         this.editor.editor.on("keypress", (cm, event) => {
             if (!cm.state.completionActive && // Enables keyboard navigation in autocomplete list
@@ -355,6 +373,14 @@ export class Playground {
 
     public writeToTerminal(text: string): void {
         this.editor.terminal.write(text)
+    }
+
+    public openTerminal(): void {
+        this.editor.openTerminal()
+    }
+
+    public closeTerminal(): void {
+        this.editor.closeTerminal()
     }
 
     public setEditorFontSize(size: string) {

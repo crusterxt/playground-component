@@ -10,6 +10,8 @@ export class Editor {
     public editor: CodeMirror.Editor
     public terminal: Terminal
     public snippet: Snippet | null = null
+    private onTerminalOpen: (() => void)[] = [];
+    private onTerminalClose: (() => void)[] = [];
 
     constructor(wrapper: HTMLElement, repository: CodeRepository, readonly: boolean, showLineNumbers: boolean) {
         const editorConfig: EditorConfiguration = {
@@ -170,11 +172,23 @@ export class Editor {
     }
 
     public openTerminal() {
+        if (!this.terminalSsClosed()) {
+            return
+        }
         this.wrapperElement.classList.remove("closed-terminal")
+        this.onTerminalOpen.forEach((callback) => callback())
     }
 
     public closeTerminal() {
+        if (this.terminalSsClosed()) {
+            return
+        }
         this.wrapperElement.classList.add("closed-terminal")
+        this.onTerminalClose.forEach((callback) => callback())
+    }
+
+    public terminalSsClosed(): boolean {
+        return this.wrapperElement.classList.contains("closed-terminal")
     }
 
     public setTheme(theme: ITheme) {
@@ -188,5 +202,13 @@ export class Editor {
 
     public refresh() {
         this.editor.refresh()
+    }
+
+    public registerOnTerminalOpen(callback: () => void): void {
+        this.onTerminalOpen.push(callback)
+    }
+
+    public registerOnTerminalClose(callback: () => void): void {
+        this.onTerminalClose.push(callback)
     }
 }

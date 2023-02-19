@@ -12,6 +12,7 @@ export class Editor {
     public snippet: Snippet | null = null
     private onTerminalOpen: (() => void)[] = [];
     private onTerminalClose: (() => void)[] = [];
+    private onCodeChange: ((newCode: string) => void)[] = [];
 
     constructor(wrapper: HTMLElement, repository: CodeRepository, readonly: boolean, showLineNumbers: boolean) {
         const editorConfig: EditorConfiguration = {
@@ -57,6 +58,11 @@ export class Editor {
 
             this.updateCode(code);
         })
+
+        this.editor.on('change', () => {
+            const code = this.snippet?.getRunnableCode() ?? this.editor.getValue()
+            this.onCodeChange.forEach((callback) => callback(code))
+        });
 
         const terminalElement = wrapper.querySelector(".js-terminal") as HTMLElement
         if (terminalElement === null || terminalElement === undefined) {
@@ -210,5 +216,9 @@ export class Editor {
 
     public registerOnTerminalClose(callback: () => void): void {
         this.onTerminalClose.push(callback)
+    }
+
+    public registerOnCodeChange(callback: (code: string) => void): void {
+        this.onCodeChange.push(callback)
     }
 }

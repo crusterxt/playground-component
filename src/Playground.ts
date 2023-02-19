@@ -45,6 +45,7 @@ export class Playground {
     private onFailedRun: (() => void)[] = []
     private onTerminalOpen: (() => void)[] = [];
     private onTerminalClose: (() => void)[] = [];
+    private onCodeChange: ((newCode: string) => void)[] = [];
 
     constructor(config: PlaygroundConfig) {
         if (config.selector) {
@@ -73,6 +74,10 @@ export class Playground {
 
         this.editor.registerOnTerminalClose(() => {
             this.onTerminalClose.forEach(callback => callback())
+        })
+
+        this.editor.registerOnCodeChange((newCode: string) => {
+            this.onCodeChange.forEach(callback => callback(newCode))
         })
 
         const theme = config.theme ?? "light"
@@ -347,6 +352,10 @@ export class Playground {
 
     public registerOnTerminalClose(callback: () => void): void {
         this.onTerminalClose.push(callback)
+    }
+
+    public registerOnCodeChange(callback: (newCode: string) => void): void {
+        this.onCodeChange.push(callback)
     }
 
     public setupShortcuts(): void {

@@ -146,7 +146,11 @@ export class Playground {
         }
     }
 
-    private setTheme(name: string) {
+    public setCode(code: string) {
+        this.editor.updateCode(code)
+    }
+
+    public setTheme(name: string) {
         this.setThemeImpl(ThemeManager.findTheme(name))
     }
 
@@ -188,7 +192,10 @@ export class Playground {
         }
     }
 
-    public static getConfigurationFromElement(element: Element): PlaygroundConfig {
+    public static getConfigurationFromElement(element: Element | null): PlaygroundConfig {
+        if (element === null) {
+            return {}
+        }
         const configuration = element?.getAttribute("data-configuration") ?? undefined
         const theme = element?.getAttribute("data-theme") ?? undefined
         const fontSize = element.getAttribute("data-font-size") ?? undefined

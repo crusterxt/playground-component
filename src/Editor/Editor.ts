@@ -53,9 +53,7 @@ export class Editor {
                 return
             }
 
-            this.snippet = new Snippet(code)
-            this.snippet.registerCurrentCodeObtainer(() => this.editor.getValue())
-            this.setCode(this.snippet.getCode())
+            this.updateCode(code);
         })
 
         const terminalElement = wrapper.querySelector(".js-terminal") as HTMLElement
@@ -76,6 +74,12 @@ export class Editor {
         this.terminal.mount()
 
         this.closeTerminal()
+    }
+
+    public updateCode(code: string) {
+        this.snippet = new Snippet(code)
+        this.snippet.registerCurrentCodeObtainer(() => this.editor.getValue())
+        this.setCode(this.snippet.getCode())
     }
 
     public setEditorFontSize(size: string) {

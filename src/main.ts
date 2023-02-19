@@ -4,7 +4,7 @@ import "./v-hint"
 import {Playground} from "./Playground"
 
 const currentScript = document.currentScript
-const selector = currentScript?.getAttribute("data-selector")
+const selector = currentScript?.getAttribute("data-selector") ?? null
 const scriptConfiguration = Playground.getConfigurationFromElement(currentScript!)
 
 if (selector) {

@@ -298,15 +298,28 @@
   font-size: var(--font-size);
   line-height: 1.57;
   background-color: var(--background-color);
+
+  &:hover {
+    .CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
+      opacity: 1;
+    }
+  }
 }
 
 .CodeMirror-scroll {
   width: 100%;
 }
 
+.CodeMirror-overlayscroll-horizontal {
+  margin-left: 10px;
+}
+
 .CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
   background-color: var(--scrollbar-thumb-color);
   border-radius: 5px;
+  opacity: 0.1;
+  transition: 0.1s opacity;
+  width: 95%;
 }
 
 .CodeMirror-line {

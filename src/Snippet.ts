@@ -51,6 +51,10 @@ export class Snippet {
         return this.getUnfoldedCodeWithoutCaching()
     }
 
+    public getRunnableCodeWithMarkers(): string {
+        return this.getUnfoldedCodeWithoutCaching(true)
+    }
+
     private getUnfoldedCode() {
         if (this.unfoldedCode != null) {
             return this.unfoldedCode
@@ -59,7 +63,7 @@ export class Snippet {
         return this.getUnfoldedCodeWithoutCaching()
     }
 
-    private getUnfoldedCodeWithoutCaching() {
+    private getUnfoldedCodeWithoutCaching(withMarkers: boolean = false) {
         if (this.noFolding()) {
             return this.currentCodeObtainer()
         }
@@ -76,7 +80,18 @@ export class Snippet {
         const prefix = lines.slice(0, this.range.start).join("\n")
         const suffix = lines.slice(lines.length - this.range.startFromEnd).join("\n")
 
-        const code = prefix + "\n" + indented + "\n" + suffix
+        const parts = []
+        parts.push(prefix)
+        if (withMarkers) {
+            parts.push("//code::start")
+        }
+        parts.push(indented)
+        if (withMarkers) {
+            parts.push("//code::end")
+        }
+        parts.push(suffix)
+
+        const code = parts.join("\n")
         this.unfoldedCode = code
         return code
     }

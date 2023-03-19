@@ -1,8 +1,9 @@
-import {CodeRepository, LocalCodeRepository, SharedCodeRepository} from "../Repositories"
+import {CodeRepository, LocalCodeRepository, SharedCodeRepository, SharedCodeRunConfiguration} from "../Repositories"
 import {Terminal} from "../Terminal/Terminal"
 import {ITheme} from "../themes"
 import {Snippet, SnippetState} from "../Snippet"
 import {EditorConfiguration} from "codemirror"
+import {RunnableCodeSnippet} from "../CodeRunner/CodeRunner";
 
 export class Editor {
     private wrapperElement: HTMLElement
@@ -49,14 +50,14 @@ export class Editor {
         // @ts-ignore
         this.editor = CodeMirror.fromTextArea(place, editorConfig)
         this.repository = repository
-        this.repository.getCode((code) => {
-            if (code === SharedCodeRepository.CODE_NOT_FOUND) {
+        this.repository.getCode((snippet) => {
+            if (snippet.code === SharedCodeRepository.CODE_NOT_FOUND) {
                 // If the code is not found, use default Hello World example.
                 this.terminal.write("Code for shared link not found.")
                 return
             }
 
-            this.updateCode(code);
+            this.updateCode(snippet.code);
         })
 
         this.editor.on('change', () => {
@@ -127,6 +128,10 @@ export class Editor {
     public copyCode(): Promise<void> {
         const code = this.getCode()
         return navigator.clipboard.writeText(code)
+    }
+
+    public getRunnableCodeSnippet(buildArguments: string[], runArguments: string[], runConfiguration: SharedCodeRunConfiguration): RunnableCodeSnippet {
+        return new RunnableCodeSnippet(this.snippet?.getRunnableCode()!, buildArguments, runArguments, runConfiguration)
     }
 
     public toggleSnippet() {

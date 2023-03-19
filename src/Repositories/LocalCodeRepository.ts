@@ -1,4 +1,4 @@
-import { CodeRepository } from "./interface";
+import {CodeRepository, CodeSnippet} from "./interface";
 
 /**
  * Local code repository using the browser's local storage.
@@ -15,12 +15,11 @@ println('Hello, Playground!')
 
 // To run the code, click the "Run" button or just press Ctrl + R.
 // To format the code, click the "Format" button or just press Ctrl + L.
-// See all shortcuts in the "Help" in the bottom right corner.
 
-// More examples are available in right dropdown list.
+// More examples are available in top dropdown list.
 // You can find Help for shortcuts in the bottom right corner or just press Ctrl + I.
-// See also change theme button in the top right corner. 
-// If you want to learn more about V, visit https://vlang.io
+// See also change theme button in the top right corner.
+// If you want to learn more about V, visit https://docs.vlang.foundation/ and https://learn.vlang.foundation/
 // Join us on Discord: https://discord.gg/vlang
 // Enjoy!
 `.trimStart()
@@ -29,12 +28,12 @@ println('Hello, Playground!')
         window.localStorage.setItem(LocalCodeRepository.LOCAL_STORAGE_KEY, code)
     }
 
-    getCode(onReady: (code: string) => void) {
+    getCode(onReady: (snippet: CodeSnippet) => void) {
         const localCode = window.localStorage.getItem(LocalCodeRepository.LOCAL_STORAGE_KEY)
         if (localCode === null || localCode === undefined) {
-            onReady(LocalCodeRepository.WELCOME_CODE)
+            onReady({code: LocalCodeRepository.WELCOME_CODE})
             return
         }
-        onReady(localCode)
+        onReady({code: localCode})
     }
 }

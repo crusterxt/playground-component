@@ -702,10 +702,10 @@
     getCode(onReady) {
       const localCode = window.localStorage.getItem(_LocalCodeRepository.LOCAL_STORAGE_KEY);
       if (localCode === null || localCode === void 0) {
-        onReady(_LocalCodeRepository.WELCOME_CODE);
+        onReady({ code: _LocalCodeRepository.WELCOME_CODE });
         return;
       }
-      onReady(localCode);
+      onReady({ code: localCode });
     }
   };
   var LocalCodeRepository = _LocalCodeRepository;
@@ -720,18 +720,17 @@ println('Hello, Playground!')
 
 // To run the code, click the "Run" button or just press Ctrl + R.
 // To format the code, click the "Format" button or just press Ctrl + L.
-// See all shortcuts in the "Help" in the bottom right corner.
 
-// More examples are available in right dropdown list.
+// More examples are available in top dropdown list.
 // You can find Help for shortcuts in the bottom right corner or just press Ctrl + I.
-// See also change theme button in the top right corner. 
-// If you want to learn more about V, visit https://vlang.io
+// See also change theme button in the top right corner.
+// If you want to learn more about V, visit https://docs.vlang.foundation/ and https://learn.vlang.foundation/
 // Join us on Discord: https://discord.gg/vlang
 // Enjoy!
 `.trimStart();
 
   // src/Repositories/SharedCodeRepository.ts
-  var SharedCodeRepository = class {
+  var _SharedCodeRepository = class {
     constructor(hash) {
       this.hash = hash;
     }
@@ -746,13 +745,24 @@ println('Hello, Playground!')
       fetch("/query", {
         method: "post",
         body: data
-      }).then((resp) => resp.text()).then((data2) => {
-        onReady(data2);
+      }).then((resp) => resp.json()).then((data2) => data2).then((resp) => {
+        console.log(resp);
+        if (!resp.found) {
+          onReady({ code: _SharedCodeRepository.CODE_NOT_FOUND });
+          return;
+        }
+        if (resp.error != "") {
+          console.error(resp.error);
+          onReady({ code: _SharedCodeRepository.CODE_NOT_FOUND });
+          return;
+        }
+        onReady(resp.snippet);
       }).catch((err) => {
         console.log(err);
       });
     }
   };
+  var SharedCodeRepository = _SharedCodeRepository;
   __name(SharedCodeRepository, "SharedCodeRepository");
   SharedCodeRepository.QUERY_PARAM_NAME = "query";
   SharedCodeRepository.CODE_NOT_FOUND = "Not found.";
@@ -765,7 +775,7 @@ println('Hello, Playground!')
     saveCode(_) {
     }
     getCode(onReady) {
-      onReady(this.text);
+      onReady({ code: this.text });
     }
   };
   __name(TextCodeRepository, "TextCodeRepository");
@@ -881,13 +891,16 @@ println('Hello, Playground!')
       }
       return this.getUnfoldedCodeWithoutCaching();
     }
+    getRunnableCodeWithMarkers() {
+      return this.getUnfoldedCodeWithoutCaching(true);
+    }
     getUnfoldedCode() {
       if (this.unfoldedCode != null) {
         return this.unfoldedCode;
       }
       return this.getUnfoldedCodeWithoutCaching();
     }
-    getUnfoldedCodeWithoutCaching() {
+    getUnfoldedCodeWithoutCaching(withMarkers = false) {
       if (this.noFolding()) {
         return this.currentCodeObtainer();
       }
@@ -897,7 +910,17 @@ println('Hello, Playground!')
       const lines = this.code.split("\n");
       const prefix = lines.slice(0, this.range.start).join("\n");
       const suffix = lines.slice(lines.length - this.range.startFromEnd).join("\n");
-      const code = prefix + "\n" + indented + "\n" + suffix;
+      const parts = [];
+      parts.push(prefix);
+      if (withMarkers) {
+        parts.push("//code::start");
+      }
+      parts.push(indented);
+      if (withMarkers) {
+        parts.push("//code::end");
+      }
+      parts.push(suffix);
+      const code = parts.join("\n");
       this.unfoldedCode = code;
       return code;
     }
@@ -992,6 +1015,57 @@ println('Hello, Playground!')
   };
   __name(Snippet, "Snippet");
 
+  // src/CodeRunner/CodeRunner.ts
+  var RunnableCodeSnippet = class {
+    constructor(code, buildArguments, runArguments, runConfiguration) {
+      this.code = code;
+      this.buildArguments = buildArguments;
+      this.runArguments = runArguments;
+      this.runConfiguration = runConfiguration;
+    }
+    toFormData() {
+      const data = new FormData();
+      data.append("code", this.code);
+      data.append("build-arguments", this.buildArguments.join(" "));
+      data.append("run-arguments", this.runArguments.join(" "));
+      data.append("run-configuration", this.runConfiguration.toString());
+      return data;
+    }
+  };
+  __name(RunnableCodeSnippet, "RunnableCodeSnippet");
+  var CodeRunner = class {
+    static runCode(snippet) {
+      return fetch(this.buildUrl("run"), {
+        method: "post",
+        body: snippet.toFormData()
+      }).then((resp) => {
+        if (resp.status != 200) {
+          throw new Error("Can't run code");
+        }
+        return resp;
+      }).then((resp) => resp.json()).then((data) => data);
+    }
+    static runTest(snippet) {
+      return fetch(this.buildUrl("run_test"), {
+        method: "post",
+        body: snippet.toFormData()
+      }).then((resp) => {
+        if (resp.status != 200) {
+          throw new Error("Can't run test");
+        }
+        return resp;
+      }).then((resp) => resp.json()).then((data) => data);
+    }
+    static buildUrl(path) {
+      if (this.server !== null && this.server !== void 0) {
+        const server = this.server.endsWith("/") ? this.server.slice(0, -1) : this.server;
+        return `${server}/${path}`;
+      }
+      return `/${path}`;
+    }
+  };
+  __name(CodeRunner, "CodeRunner");
+
   // src/Editor/Editor.ts
   var Editor = class {
     constructor(wrapper, repository, readonly, showLineNumbers) {
@@ -1030,12 +1104,12 @@ println('Hello, Playground!')
       const place = wrapper.querySelector("textarea");
       this.editor = CodeMirror.fromTextArea(place, editorConfig);
       this.repository = repository;
-      this.repository.getCode((code) => {
-        if (code === SharedCodeRepository.CODE_NOT_FOUND) {
+      this.repository.getCode((snippet) => {
+        if (snippet.code === SharedCodeRepository.CODE_NOT_FOUND) {
           this.terminal.write("Code for shared link not found.");
           return;
         }
-        this.updateCode(code);
+        this.updateCode(snippet.code);
       });
       this.editor.on("change", () => {
         var _a2, _b;
@@ -1096,6 +1170,10 @@ println('Hello, Playground!')
     copyCode() {
       const code = this.getCode();
       return navigator.clipboard.writeText(code);
+    }
+    getRunnableCodeSnippet(buildArguments, runArguments, runConfiguration) {
+      var _a2;
+      return new RunnableCodeSnippet((_a2 = this.snippet) == null ? void 0 : _a2.getRunnableCode(), buildArguments, runArguments, runConfiguration);
     }
     toggleSnippet() {
       if (this.snippet === null) {
@@ -1176,46 +1254,6 @@ println('Hello, Playground!')
     }
   };
   __name(Editor, "Editor");
-
-  // src/CodeRunner/CodeRunner.ts
-  var CodeRunner = class {
-    static runCode(code) {
-      const data = new FormData();
-      data.append("code", code);
-      const url = this.buildUrl("run");
-      return fetch(url, {
-        method: "post",
-        body: data
-      }).then((resp) => {
-        if (resp.status != 200) {
-          throw new Error("Can't run code");
-        }
-        return resp;
-      }).then((resp) => resp.json()).then((data2) => JSON.parse(data2));
-    }
-    static runTest(code) {
-      const data = new FormData();
-      data.append("code", code);
-      const url = this.buildUrl("run_test");
-      return fetch(url, {
-        method: "post",
-        body: data
-      }).then((resp) => {
-        if (resp.status != 200) {
-          throw new Error("Can't run test");
-        }
-        return resp;
-      }).then((resp) => resp.json()).then((data2) => JSON.parse(data2));
-    }
-    static buildUrl(path) {
-      if (this.server !== null && this.server !== void 0) {
-        const server = this.server.endsWith("/") ? this.server.slice(0, -1) : this.server;
-        return `${server}/${path}`;
-      }
-      return `/${path}`;
-    }
-  };
-  __name(CodeRunner, "CodeRunner");
 
   // src/template.ts
   var expandSnippetIcons = `
@@ -1580,13 +1618,17 @@ println('Hello, Playground!')
       this.runCode();
     }
     runCode() {
-      var _a2;
       this.clearTerminal();
       this.writeToTerminal("Running code...");
-      const code = (_a2 = this.editor.snippet) == null ? void 0 : _a2.getRunnableCode();
-      CodeRunner.runCode(code).then((result) => {
+      const snippet = this.getRunnableCodeSnippet();
+      CodeRunner.runCode(snippet).then((result) => {
+        if (result.error != "") {
+          this.writeToTerminal(result.error);
+          this.onFailedRun.forEach((callback) => callback());
+          return;
+        }
         this.clearTerminal();
-        this.writeToTerminal(result.output);
+        this.writeToTerminal(result.output.split("\n").slice(0, -1).join("\n"));
         this.onRunFinished(result);
       }).catch((err) => {
         console.log(err);
@@ -1595,17 +1637,16 @@ println('Hello, Playground!')
       });
     }
     runTests() {
-      var _a2;
       this.clearTerminal();
       this.writeToTerminal("Running tests...");
-      const code = (_a2 = this.editor.snippet) == null ? void 0 : _a2.getRunnableCode();
-      CodeRunner.runTest(code).then((result) => {
+      const snippet = this.getRunnableCodeSnippet();
+      CodeRunner.runTest(snippet).then((result) => {
         this.clearTerminal();
-        if (result.ok) {
+        if (result.error == "") {
           this.editor.terminal.writeTestPassed();
         } else {
           this.editor.terminal.writeTestFailed();
-          const output = result.output.split("\n").slice(2, -6).join("\n");
+          const output = result.error.split("\n").slice(2, -6).join("\n");
           this.writeToTerminal(output);
         }
         this.onRunFinished(result);
@@ -1615,8 +1656,15 @@ println('Hello, Playground!')
         this.onFailedRun.forEach((callback) => callback());
       });
     }
+    getRunnableCodeSnippet() {
+      let configuration = 0 /* Run */;
+      if (this.runAsTests) {
+        configuration = 1 /* Test */;
+      }
+      return this.editor.getRunnableCodeSnippet([], [], configuration);
+    }
     onRunFinished(result) {
-      if (result.ok) {
+      if (result.error == "") {
         this.onSuccessfulRun.forEach((callback) => callback());
       } else {
         this.onFailedRun.forEach((callback) => callback());

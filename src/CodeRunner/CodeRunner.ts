@@ -1,22 +1,39 @@
-export type RunCodeResult = {
-    ok: boolean
+import {SharedCodeRunConfiguration} from "../Repositories";
+
+export type RunCodeResponse = {
     output: string
+    error: string
+}
+
+export class RunnableCodeSnippet {
+    constructor(
+        public code: string,
+        public buildArguments: string[],
+        public runArguments: string[],
+        public runConfiguration: SharedCodeRunConfiguration,
+    ) {
+    }
+
+    public toFormData(): FormData {
+        const data = new FormData()
+        data.append("code", this.code)
+        data.append("build-arguments", this.buildArguments.join(" "))
+        data.append("run-arguments", this.runArguments.join(" "))
+        data.append("run-configuration", this.runConfiguration.toString())
+        return data
+    }
 }
 
 /**
- * CodeRunner describes how to run, format and share code.
+ * CodeRunner describes how to run, format, and share code.
  */
 export class CodeRunner {
     public static server: string | null;
 
-    public static runCode(code: string): Promise<RunCodeResult> {
-        const data = new FormData()
-        data.append("code", code)
-
-        const url = this.buildUrl("run")
-        return fetch(url, {
+    public static runCode(snippet: RunnableCodeSnippet): Promise<RunCodeResponse> {
+        return fetch(this.buildUrl("run"), {
             method: "post",
-            body: data,
+            body: snippet.toFormData(),
         })
             .then(resp => {
                 if (resp.status != 200) {
@@ -26,17 +43,13 @@ export class CodeRunner {
                 return resp
             })
             .then(resp => resp.json())
-            .then(data => JSON.parse(data) as RunCodeResult)
+            .then(data => data as RunCodeResponse)
     }
 
-    public static runTest(code: string): Promise<RunCodeResult> {
-        const data = new FormData()
-        data.append("code", code)
-
-        const url = this.buildUrl("run_test")
-        return fetch(url, {
+    public static runTest(snippet: RunnableCodeSnippet): Promise<RunCodeResponse> {
+        return fetch(this.buildUrl("run_test"), {
             method: "post",
-            body: data,
+            body: snippet.toFormData(),
         })
             .then(resp => {
                 if (resp.status != 200) {
@@ -46,7 +59,7 @@ export class CodeRunner {
                 return resp
             })
             .then(resp => resp.json())
-            .then(data => JSON.parse(data) as RunCodeResult)
+            .then(data => data as RunCodeResponse)
     }
 
     private static buildUrl(path: string) {
@@ -54,7 +67,7 @@ export class CodeRunner {
             const server = this.server.endsWith('/') ? this.server.slice(0, -1) : this.server
             return `${server}/${path}`
         }
-        
-        return  `/${path}`
+
+        return `/${path}`
     }
 }

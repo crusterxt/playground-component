@@ -1,7 +1,7 @@
-import {CodeRepository, TextCodeRepository} from "./Repositories"
+import {CodeRepository, SharedCodeRunConfiguration, TextCodeRepository} from "./Repositories"
 
 import {Editor} from "./Editor/Editor"
-import {CodeRunner, RunCodeResult} from "./CodeRunner/CodeRunner"
+import {CodeRunner, RunCodeResponse, RunnableCodeSnippet} from "./CodeRunner/CodeRunner"
 import {collapseSnippetIcons, expandSnippetIcons, template} from "./template"
 import {ThemeManager} from "./ThemeManager/ThemeManager"
 import {SnippetState} from "./Snippet"
@@ -298,11 +298,16 @@ export class Playground {
         this.clearTerminal()
         this.writeToTerminal("Running code...")
 
-        const code = this.editor.snippet?.getRunnableCode()!
-        CodeRunner.runCode(code)
+        const snippet = this.getRunnableCodeSnippet()
+        CodeRunner.runCode(snippet)
             .then(result => {
+                if (result.error != "") {
+                    this.writeToTerminal(result.error)
+                    this.onFailedRun.forEach(callback => callback())
+                    return
+                }
                 this.clearTerminal()
-                this.writeToTerminal(result.output)
+                this.writeToTerminal(result.output.split("\n").slice(0, -1).join("\n"))
                 this.onRunFinished(result)
             })
             .catch(err => {
@@ -316,16 +321,16 @@ export class Playground {
         this.clearTerminal()
         this.writeToTerminal("Running tests...")
 
-        const code = this.editor.snippet?.getRunnableCode()!
-        CodeRunner.runTest(code)
+        const snippet = this.getRunnableCodeSnippet()
+        CodeRunner.runTest(snippet)
             .then(result => {
                 this.clearTerminal()
 
-                if (result.ok) {
+                if (result.error == "") {
                     this.editor.terminal.writeTestPassed()
                 } else {
                     this.editor.terminal.writeTestFailed()
-                    const output = result.output.split("\n").slice(2, -6).join("\n")
+                    const output = result.error.split("\n").slice(2, -6).join("\n")
                     this.writeToTerminal(output)
                 }
 
@@ -338,8 +343,16 @@ export class Playground {
             })
     }
 
-    private onRunFinished(result: RunCodeResult) {
-        if (result.ok) {
+    public getRunnableCodeSnippet(): RunnableCodeSnippet {
+        let configuration = SharedCodeRunConfiguration.Run
+        if (this.runAsTests) {
+            configuration = SharedCodeRunConfiguration.Test
+        }
+        return this.editor.getRunnableCodeSnippet([], [], configuration)
+    }
+
+    private onRunFinished(result: RunCodeResponse) {
+        if (result.error == "") {
             this.onSuccessfulRun.forEach(callback => callback())
         } else {
             this.onFailedRun.forEach(callback => callback())

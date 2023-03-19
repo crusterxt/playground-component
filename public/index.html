@@ -200,7 +200,7 @@
     <br>
 
     <div class="wrapper" style="width: 800px; max-height: 500px">
-        <div class="vlang-code" data-show-footer="false" data-configuration="tests" data-theme="light">
+        <div class="vlang-code" data-show-footer="false" data-configuration="run" data-theme="light">
             fn test_sum() {
                 assert sum(2, 2) == 4
             }
@@ -296,9 +296,11 @@
     playground.setTheme("dark")
 
     playground.setCode(`
-fn test_sum() {
+fn main() {
     //code::start
-    assert sum(2, 2) == 4assert sum(2, 2) == 4assert sum(2, 2) == 4assert sum(2, 2) == 4assert sum(2, 2) == 4
+    println("Hello, world!")
+    println("Hello, world!")
+    println("Hello, world!")
     //code::end
 }
     `)

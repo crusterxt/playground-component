@@ -1,4 +1,4 @@
-import {CodeRepository, LocalCodeRepository, SharedCodeRepository, SharedCodeRunConfiguration} from "../Repositories"
+import {CodeRepository, SharedCodeRepository, SharedCodeRunConfiguration} from "../Repositories"
 import {Terminal} from "../Terminal/Terminal"
 import {ITheme} from "../themes"
 import {Snippet, SnippetState} from "../Snippet"
@@ -15,14 +15,19 @@ export class Editor {
     private onTerminalClose: (() => void)[] = [];
     private onCodeChange: ((newCode: string) => void)[] = [];
 
-    constructor(wrapper: HTMLElement, repository: CodeRepository, readonly: boolean, showLineNumbers: boolean) {
+    constructor(
+        wrapper: HTMLElement,
+        repository: CodeRepository,
+        readonly: boolean,
+        showLineNumbers: boolean,
+        mode: string = "v",
+    ) {
         const editorConfig: EditorConfiguration = {
-            mode: "v",
+            mode: mode,
             lineNumbers: showLineNumbers,
             // @ts-ignore
             matchBrackets: true,
             extraKeys: {
-                "Ctrl-Space": "autocomplete",
                 "Ctrl-/": "toggleComment",
             },
             indentWithTabs: true,
@@ -52,7 +57,7 @@ export class Editor {
         this.repository = repository
         this.repository.getCode((snippet) => {
             if (snippet.code === SharedCodeRepository.CODE_NOT_FOUND) {
-                // If the code is not found, use default Hello World example.
+                // If the code is not found, use the default Hello World example.
                 this.terminal.write("Code for shared link not found.")
                 return
             }
@@ -113,16 +118,6 @@ export class Editor {
 
     public getCode(): string {
         return this.snippet?.getCode()!
-    }
-
-    public saveCode() {
-        const isSharedCodeRepository = this.repository instanceof SharedCodeRepository
-
-        if (isSharedCodeRepository) {
-            this.repository = new LocalCodeRepository()
-        }
-
-        this.repository.saveCode(this.getCode())
     }
 
     public copyCode(): Promise<void> {
@@ -205,10 +200,6 @@ export class Editor {
     public setTheme(theme: ITheme) {
         this.editor.setOption("theme", theme.name())
         this.wrapperElement?.setAttribute("data-theme", theme.name())
-    }
-
-    public showCompletion() {
-        this.editor.execCommand("autocomplete")
     }
 
     public refresh() {

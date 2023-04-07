@@ -23,6 +23,7 @@
 .cm-s-dark .cm-bracket { color: #997; }
 .cm-s-dark .cm-tag { color: #170; }
 .cm-s-dark .cm-attribute { color: #BBB529 !important; }
+.cm-s-dark .cm-hash-directive { color: #BBB529 !important; }
 .cm-s-dark .cm-hr { color: #999; }
 .cm-s-dark .cm-link { color: #00c; }
 .cm-s-dark .cm-function { color: #FFC66D; }
@@ -36,19 +37,6 @@
     padding: 1px 0;
 }
 .CodeMirror.cm-s-dark span.CodeMirror-nonmatchingbracket { color: #a22; }
-
-.cm-s-dark .CodeMirror-gutters {
-    background-color: #1e1f22;
-    border-right: 1px solid #323438;
-}
-
-.cm-s-dark .CodeMirror-linenumbers {
-    border-right: 0 solid #e7e8ec;
-}
-
-.cm-s-dark .CodeMirror-linenumber {
-    color: #4f5157;
-}
 
 .cm-s-dark .CodeMirror-cursor {
     border-left: 1px solid #bbbbbb;

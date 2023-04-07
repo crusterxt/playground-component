@@ -30,6 +30,7 @@ export interface PlaygroundConfig {
     showCopyButton?: boolean
     customRunButton?: string
     server?: string
+    isModuleFile?: boolean
 }
 
 /**
@@ -62,7 +63,8 @@ export class Playground {
         this.runAsTests = config.configuration === "tests"
         this.repository = new TextCodeRepository(code)
         const editorElement = this.playgroundElement.querySelector(".v-playground") as HTMLElement
-        this.editor = new Editor(editorElement, this.repository, config.highlightOnly ?? false, config.showLineNumbers ?? true)
+        const codeMirrorMode = config.isModuleFile ? "vmod" : "v"
+        this.editor = new Editor(editorElement, this.repository, config.highlightOnly ?? false, config.showLineNumbers ?? true, codeMirrorMode)
 
         if (config.fontSize) {
             this.editor.setEditorFontSize(config.fontSize)
@@ -369,24 +371,6 @@ export class Playground {
 
     public registerOnCodeChange(callback: (newCode: string) => void): void {
         this.onCodeChange.push(callback)
-    }
-
-    public setupShortcuts(): void {
-        this.editor.editor.on("keypress", (cm, event) => {
-            if (!cm.state.completionActive && // Enables keyboard navigation in autocomplete list
-                event.key.length === 1 && event.key.match(/[a-z0-9]/i)) { // Only letters and numbers trigger autocomplete
-                this.editor.showCompletion()
-            }
-        })
-
-        document.addEventListener("keydown", ev => {
-            if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
-                this.editor.saveCode()
-                ev.preventDefault()
-            } else {
-                this.editor.saveCode()
-            }
-        })
     }
 
     public clearTerminal(): void {

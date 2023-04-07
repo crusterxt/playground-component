@@ -17,8 +17,9 @@
     "./dist"
   ],
   "scripts": {
+    "watch-scss": "sass --watch src/css/index.scss:src/css/index.css",
     "watch": "node esbuild.watch.config.js",
-    "prod": "node esbuild.build.config.js && v run ./bundle-js.v"
+    "prod": "sass src/css/index.scss:src/css/index.css && node esbuild.build.config.js && v run ./bundle-js.v"
   },
   "dependencies": {
     "@codemirror/language": "^6.2.1",

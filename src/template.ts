@@ -51,7 +51,7 @@ export const template =
       </div>
       
       <!-- Place for CodeMirror editor -->
-      <textarea></textarea>
+      <textarea aria-label="Code snippet area"></textarea>
     </div>
     
     <div class="js-terminal playground__terminal">

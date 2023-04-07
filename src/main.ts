@@ -1,5 +1,5 @@
 import "./v"
-import "./v-hint"
+import "./vmod"
 
 import {Playground} from "./Playground"
 

@@ -10,7 +10,6 @@ files := [
 	'./codemirror/comment.js',
 	'./codemirror/continuecomment.js',
 	'./codemirror/matchbrackets.js',
-	'./codemirror/show-hint.js',
 	'./public/playground.js',
 ]
 

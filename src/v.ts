@@ -1,11 +1,28 @@
 import {EditorConfiguration, Mode, StringStream} from "codemirror"
-import {
-    ifAttributesRegexp,
-    keyValueAttributesRegexp,
-    severalSingleKeyValueAttributesRegexp,
-    simpleAttributesRegexp,
-    singleKeyValueAttributesRegexp,
-} from "./v-hint"
+
+const baseAttributes = [
+    "params", "noinit", "required", "skip", "assert_continues",
+    "unsafe", "manualfree", "heap", "nonnull", "primary", "inline",
+    "direct_array_access", "live", "flag", "noinline", "noreturn", "typedef", "console",
+    "sql", "table", "deprecated", "deprecated_after", "export", "callconv"
+]
+
+const word = "[\\w_]+"
+// [noinit]
+export const simpleAttributesRegexp = new RegExp(`^(${baseAttributes.join("|")})]$`)
+
+// [key: value]
+const keyValue = `(${word}: ${word})`
+export const singleKeyValueAttributesRegexp = new RegExp(`^${keyValue}]$`)
+
+// [attr1; attr2]
+export const severalSingleKeyValueAttributesRegexp = new RegExp(`^(${baseAttributes.join("|")}(; ?)?){2,}]$`)
+
+// [key: value; key: value]
+export const keyValueAttributesRegexp = new RegExp(`^((${keyValue})(; )?){2,}]$`)
+
+// [if expr ?]
+export const ifAttributesRegexp = new RegExp(`^if ${word} \\??]`)
 
 type Quota = "'" | "\"" | "`"
 type Tokenizer = (stream: StringStream, state: ModeState) => string | null
@@ -35,7 +52,12 @@ class Context {
         public column: number,
         public type: string,
         public align: boolean | null,
-        public prev?: Context) {
+        public prev?: Context,
+        /**
+         * Set of imports in the current context.
+         * Used for highlighting import names in code.
+         */
+        public knownImports: Set<string> = new Set()) {
     }
 
     /**
@@ -54,12 +76,6 @@ class Context {
      * Used for highlighting import names in import statements.
      */
     expectedImportName: boolean = false
-
-    /**
-     * Set of imports in current context.
-     * Used for highlighting import names in code.
-     */
-    knownImports: Set<string> = new Set()
 }
 
 export const keywords: Set<string> = new Set<string>([
@@ -113,6 +129,12 @@ export const pseudoKeywords: Set<string> = new Set<string>([
     "thread",
 ])
 
+export const hashDirectives: Set<string> = new Set<string>([
+    "#flag",
+    "#include",
+    "#pkgconfig",
+])
+
 export const atoms: Set<string> = new Set<string>([
     "true",
     "false",
@@ -131,6 +153,7 @@ export const builtinTypes: Set<string> = new Set<string>([
     "i8",
     "i16",
     "int",
+    "i32",
     "i64",
     "i128",
     "u8",
@@ -281,6 +304,7 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
         if (keywords.has(cur)) return "keyword"
         if (pseudoKeywords.has(cur)) return "keyword"
         if (atoms.has(cur)) return "atom"
+        if (hashDirectives.has(cur)) return "hash-directive"
 
         if (!wasDot) {
             // don't highlight `foo.int()`
@@ -306,21 +330,21 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
             }
         }
 
-        if (wasDot) {
-            return "property"
-        }
-
         // highlight only last part
         // example:
         //   import foo.boo
         //              ^^^ - only this part will be highlighted
-        if (state.context.expectedImportName && stream.peek() != ".") {
+        if (state.context.expectedImportName && stream.peek() !== ".") {
             state.context.expectedImportName = false
             if (state.context.knownImports === undefined) {
                 state.context.knownImports = new Set()
             }
             state.context.knownImports.add(cur)
             return "import-name"
+        }
+
+        if (wasDot) {
+            return "property"
         }
 
         // highlight only identifier with dot after it
@@ -486,7 +510,7 @@ CodeMirror.defineMode("v", (config: EditorConfiguration): Mode<ModeState> => {
     }
 
     function pushContext(state: ModeState, column: number, type: string) {
-        return state.context = new Context(state.indention, column, type, null, state.context)
+        return state.context = new Context(state.indention, column, type, null, state.context, state.context.knownImports)
     }
 
     function popContext(state: ModeState) {

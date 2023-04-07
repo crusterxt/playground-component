@@ -4,21 +4,6 @@ type ThemeCallback = (newTheme: ITheme) => void;
 
 /**
  * ThemeManager is responsible for managing the theme of the playground.
- * It will register a callback to the change theme button and will update the
- * theme when the user clicks on the button.
- * It will also update the theme when the user changes the theme in the URL.
- *
- * @param queryParams The query params of the URL.
- * @param changeThemeButton The button to change the theme or null.
- *
- * @example
- * const changeThemeButton = document.querySelector('.js-change-theme')
- * const queryParams = new QueryParams(window.location.search);
- * const themeManager = new ThemeManager(queryParams, changeThemeButton)
- *
- * themeManager.registerOnChange((theme) => {
- *   // Do something with the theme
- * })
  */
 export class ThemeManager {
     private static themes: ITheme[] = [new Dark(), new Light()]

@@ -22,7 +22,7 @@
 </head>
 <body>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+    @import "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap";
 
     * {
         box-sizing: border-box;
@@ -199,8 +199,8 @@
 
     <br>
 
-    <div class="wrapper" style="width: 800px; max-height: 500px">
-        <div class="vlang-code" data-show-footer="false" data-configuration="run" data-theme="light">
+    <div class="wrapper" style="width: 500px; max-height: 500px">
+        <div class="vlang-code" data-show-footer="true" data-configuration="run" data-theme="light">
             fn test_sum() {
                 assert sum(2, 2) == 4
             }
@@ -285,24 +285,21 @@
 <script src="../codemirror/comment.js"></script>
 <script src="../codemirror/continuecomment.js"></script>
 <script src="../codemirror/matchbrackets.js"></script>
-<script src="../codemirror/show-hint.js"></script>
 <script src="./playground.js" data-font-size="14px" data-theme="dark"></script>
 <script>
     const element = document.querySelector('.vlang-code')
     const playground = Playground.create(element, {
         fontSize: '14px',
-        showLineNumbers: false,
+        showLineNumbers: true,
+        isModuleFile: false,
     })
     playground.setTheme("dark")
 
     playground.setCode(`
-fn main() {
-    //code::start
-    println("Hello, world!")
-    println("Hello, world!")
-    println("Hello, world!")
-    //code::end
-}
+#flag aaaaa
+#include aaa
+#pkgconfig r_core
+#pkgconfig --cflags --libs r_core
     `)
 
     playground.registerOnCodeChange((code) => {

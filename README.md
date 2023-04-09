@@ -16,6 +16,12 @@ its `data-selector` attribute.
 <script src="https://unpkg.com/vlang-playground@1" data-selector="code"></script>
 ```
 
+Add css to your page:
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/vlang-playground@1/dist/vlang-playground.css">
+```
+
 Mostly inspired by [Kotlin Playground](https://github.com/JetBrains/kotlin-playground).
 
 ## License

@@ -9,10 +9,17 @@
   ],
   "main": "dist/vlang-playground.js",
   "author": {
-    "name": "Petr Makhnev",
-    "email": "mr.makhneff@gmail.com",
-    "url": "https://github.com/i582"
+    "name": "V Open Source Foundation",
+    "email": "hello@vlang.foundation",
+    "url": "https://vlang.foundation"
   },
+  "contributors": [
+    {
+      "name": "Petr Makhnev",
+      "email": "mr.makhneff@gmail.com",
+      "url": "https://github.com/i582"
+    }
+  ],
   "files": [
     "./dist"
   ],

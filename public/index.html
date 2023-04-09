@@ -200,26 +200,11 @@
     <br>
 
     <div class="wrapper" style="">
-        <div class="vlang-code" data-show-footer="true" data-configuration="run" data-theme="light">
-            fn test_sum() {
-                assert sum(2, 2) == 4
+        <div class="vlang-code" data-show-footer="true" data-configuration="check-output" data-expected-output="Hello\nmy little\n" data-theme="dark">
+            fn main() {
+                println("Hello")
+                println("my little")
             }
-
-            //code::start
-            [noinit]
-            [another: value]
-            [another: value; sss]
-            [sss; sss]
-            [another: value1; unsafe: value2]
-            [if some ?]
-            fn sum(a int, b int) int {
-
-                [100]
-                a.name
-
-                // write code here
-            }
-            //code::end
         </div>
     </div>
 
@@ -292,15 +277,16 @@
         fontSize: '14px',
         showLineNumbers: true,
         isModuleFile: false,
+        // expectedOutput: "Hello\nmy little\n"
     })
     playground.setTheme("dark")
 
-    playground.setCode(`
-#flag aaaaa
-#include aaa
-#pkgconfig r_core
-#pkgconfig --cflags --libs r_core
-    `)
+//     playground.setCode(`
+// fn main() {
+//     println("Hello")
+//     println("my little")
+// }
+//     `)
 
     playground.registerOnCodeChange((code) => {
         console.log(code)

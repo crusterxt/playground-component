@@ -76,6 +76,26 @@ export class Terminal {
         }
     }
 
+    public writeOutputEqual() {
+        const testPassedElement = `
+<span class="test-passed-line">
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8.50006" cy="8.5" r="6.70953" stroke="#38a13b"/>
+        <path d="M5.06188 8.93582L8.00653 10.9566L11.4065 5.35109" stroke="#38a13b"/>
+    </svg>
+
+    <span>Output Equal</span>
+</span>
+`
+
+        const outputElement = this.getTerminalOutputElement()
+        outputElement.innerHTML += testPassedElement + "\n"
+
+        if (this.onWrite !== null) {
+            this.onWrite("")
+        }
+    }
+
     public clear() {
         this.getTerminalOutputElement().innerHTML = ""
     }

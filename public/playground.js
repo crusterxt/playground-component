@@ -1,7 +1,816 @@
-"use strict";(()=>{var ee=Object.defineProperty,te=Object.defineProperties;var ne=Object.getOwnPropertyDescriptors;var W=Object.getOwnPropertySymbols;var ie=Object.prototype.hasOwnProperty,oe=Object.prototype.propertyIsEnumerable;var $=(p,e,t)=>e in p?ee(p,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):p[e]=t,_=(p,e)=>{for(var t in e||(e={}))ie.call(e,t)&&$(p,t,e[t]);if(W)for(var t of W(e))oe.call(e,t)&&$(p,t,e[t]);return p},Q=(p,e)=>te(p,ne(e));var V=["params","noinit","required","skip","assert_continues","unsafe","manualfree","heap","nonnull","primary","inline","direct_array_access","live","flag","noinline","noreturn","typedef","console","sql","table","deprecated","deprecated_after","export","callconv"],N="[\\w_]+",re=new RegExp(`^(${V.join("|")})]$`),Y=`(${N}: ${N})`,se=new RegExp(`^${Y}]$`),le=new RegExp(`^(${V.join("|")}(; ?)?){2,}]$`),ue=new RegExp(`^((${Y})(; )?){2,}]$`),ae=new RegExp(`^if ${N} \\??]`),F=class{constructor(e,t,i,u,a,m=new Set){this.indentation=e;this.column=t;this.type=i;this.align=u;this.prev=a;this.knownImports=m;this.insideString=!1;this.stringQuote=null;this.expectedImportName=!1}},q=new Set(["as","asm","assert","atomic","break","const","continue","defer","else","enum","fn","for","go","goto","if","import","in","interface","is","isreftype","lock","match","module","mut","none","or","pub","return","rlock","select","shared","sizeof","static","struct","spawn","type","typeof","union","unsafe","volatile","__global","__offsetof"]),de=new Set(["sql","chan","thread"]),ce=new Set(["#flag","#include","#pkgconfig"]),pe=new Set(["true","false","nil","print","println","exit","panic","error","dump"]),he=new Set(["bool","string","i8","i16","int","i32","i64","i128","u8","u16","u32","u64","u128","rune","f32","f64","isize","usize","voidptr","any"]);CodeMirror.defineMode("v",p=>{var y;let e=(y=p.indentUnit)!=null?y:0,t=/[+\-*&^%:=<>!?|\/]/,i=null;function u(n){return n.eatWhile(/[\w$_\xa1-\uffff]/),n.current()}function a(n,o){let s=n.next();if(s===null)return null;if(o.context.insideString&&s==="}")return n.eat("}"),o.tokenize=r(o.context.stringQuote),"end-interpolation";if(s==='"'||s==="'"||s==="`")return o.tokenize=r(s),o.tokenize(n,o);if((s==="r"||s==="c")&&(n.peek()=='"'||n.peek()=="'")){let S=n.next();return S===null||(o.tokenize=d(S)),"string"}if(s==="."&&!n.match(/^[0-9]+([eE][\-+]?[0-9]+)?/))return"operator";if(s==="["&&(n.match(re)||n.match(se)||n.match(le)||n.match(ue)||n.match(ae)))return"attribute";if(/[\d.]/.test(s))return s==="0"?n.match(/^[xX][0-9a-fA-F_]+/)||n.match(/^o[0-7_]+/)||n.match(/^b[0-1_]+/):n.match(/^[0-9_]*\.?[0-9_]*([eE][\-+]?[0-9_]+)?/),"number";if(/[\[\]{}(),;:.]/.test(s))return i=s,null;if(s==="/"){if(n.eat("*"))return o.tokenize=l,l(n,o);if(n.eat("/"))return n.skipToEnd(),"comment"}if(t.test(s))return n.eatWhile(t),"operator";if(s==="@")return u(n),"at-identifier";if(s==="$"){let S=u(n).slice(1);return q.has(S)?"keyword":"compile-time-identifier"}n.backUp(2);let f=n.next()===".";n.next();let h=u(n);if(h==="import"&&(o.context.expectedImportName=!0),q.has(h)||de.has(h))return"keyword";if(pe.has(h))return"atom";if(ce.has(h))return"hash-directive";if(!f&&he.has(h))return"builtin";if(h.length>0&&h[0].toUpperCase()===h[0])return"type";let w=n.peek();if(w==="("||w==="<")return"function";if(w==="["){n.next();let S=n.next();if(n.backUp(2),S!=null&&S.match(/[A-Z]/i))return"function"}return o.context.expectedImportName&&n.peek()!=="."?(o.context.expectedImportName=!1,o.context.knownImports===void 0&&(o.context.knownImports=new Set),o.context.knownImports.add(h),"import-name"):f?"property":o.context.knownImports.has(h)&&n.peek()=="."?"import-name":"variable"}function m(n,o){return n.match("}")?(o.tokenize=r(o.context.stringQuote),"end-interpolation"):(o.tokenize=a,o.tokenize(n,o))}function v(n,o){let s=n.next();if(s===" ")return o.tokenize=r(o.context.stringQuote),o.tokenize(n,o);if(s===".")return"operator";let f=u(n);if(f[0].toLowerCase()===f[0].toUpperCase())return o.tokenize=r(o.context.stringQuote),o.tokenize(n,o);let h=n.next();return n.backUp(1),h==="."?o.tokenize=v:o.tokenize=r(o.context.stringQuote),"variable"}function b(n,o){let s=n.next();return s==="$"&&n.eat("{")?(o.tokenize=m,"start-interpolation"):s==="$"?(o.tokenize=v,"start-interpolation"):"string"}function C(n,o){return n.next()==="\\"?(n.next(),o.tokenize=r(o.context.stringQuote),"valid-escape"):"string"}function x(n){return n==="n"||n==="t"||n==="r"||n==="\\"||n==='"'||n==="'"||n==="0"}function r(n){return function(o,s){s.context.insideString=!0,s.context.stringQuote=n;let f="",h=!1,w=!1;for(;(f=o.next())!=null;){if(f===n&&!h){w=!0;break}if(f==="$"&&!h&&o.eat("{"))return s.tokenize=b,o.backUp(2),"string";if(f==="$"&&!h)return s.tokenize=b,o.backUp(1),"string";if(h&&x(f))return o.backUp(2),s.tokenize=C,"string";h=!h&&f==="\\"}return(w||h)&&(s.tokenize=a),s.context.insideString=!1,s.context.stringQuote=null,"string"}}function d(n){return function(o,s){s.context.insideString=!0,s.context.stringQuote=n;let f="",h=!1,w=!1;for(;(f=o.next())!=null;){if(f===n&&!h){w=!0;break}h=!h&&f==="\\"}return(w||h)&&(s.tokenize=a),s.context.insideString=!1,s.context.stringQuote=null,"string"}}function l(n,o){let s=!1,f;for(;f=n.next();){if(f==="/"&&s){o.tokenize=a;break}s=f==="*"}return"comment"}function c(n,o,s){return n.context=new F(n.indention,o,s,null,n.context,n.context.knownImports)}function g(n){if(!n.context.prev)return;let o=n.context.type;return(o===")"||o==="]"||o==="}")&&(n.indention=n.context.indentation),n.context=n.context.prev,n.context}return{startState:function(){return{tokenize:null,context:new F(0,0,"top",!1),indention:0,startOfLine:!0}},token:function(n,o){let s=o.context;if(n.sol()&&(s.align==null&&(s.align=!1),o.indention=n.indentation(),o.startOfLine=!0),n.eatSpace())return null;i=null;let f=(o.tokenize||a)(n,o);return f==="comment"||(s.align==null&&(s.align=!0),i==="{"?c(o,n.column(),"}"):i==="["?c(o,n.column(),"]"):i==="("?c(o,n.column(),")"):(i==="}"&&s.type==="}"||i===s.type)&&g(o),o.startOfLine=!1),f},indent:function(n,o){if(n.tokenize!==a&&n.tokenize!=null||n.context.type=="top")return 0;let s=n.context,h=o.charAt(0)===s.type;return s.align?s.column+(h?0:1):s.indentation+(h?0:e)},electricChars:"{}):",closeBrackets:"()[]{}''\"\"``",fold:"brace",blockCommentStart:"/*",blockCommentEnd:"*/",lineComment:"//"}});CodeMirror.defineMIME("text/x-v","v");var A=class{constructor(e,t,i,u,a){this.indentation=e;this.column=t;this.type=i;this.align=u;this.prev=a;this.insideString=!1;this.stringQuote=null}},ge=new Set(["Module"]);CodeMirror.defineMode("vmod",p=>{var x;let e=(x=p.indentUnit)!=null?x:0,t=/[+\-*&^%:=<>!?|\/]/,i=null;function u(r){return r.eatWhile(/[\w$_\xa1-\uffff]/),r.current()}function a(r,d){let l=r.next();if(l===null)return null;if(l==='"'||l==="'"||l==="`")return d.tokenize=m(l),d.tokenize(r,d);if(l==="."&&!r.match(/^[0-9]+([eE][\-+]?[0-9]+)?/))return"operator";if(/[\d.]/.test(l))return l==="0"?r.match(/^[xX][0-9a-fA-F_]+/)||r.match(/^o[0-7_]+/)||r.match(/^b[0-1_]+/):r.match(/^[0-9_]*\.?[0-9_]*([eE][\-+]?[0-9_]+)?/),"number";if(/[\[\]{}(),;:.]/.test(l))return i=l,null;if(l==="/"){if(r.eat("*"))return d.tokenize=v,v(r,d);if(r.eat("/"))return r.skipToEnd(),"comment"}if(t.test(l))return r.eatWhile(t),"operator";let c=u(r);if(ge.has(c))return"keyword";let g=r.peek();return g==="("||g==="<"?"function":g===":"?"property":"variable"}function m(r){return function(d,l){l.context.insideString=!0,l.context.stringQuote=r;let c="",g=!1,y=!1;for(;(c=d.next())!=null;){if(c===r&&!g){y=!0;break}g=!g&&c==="\\"}return(y||g)&&(l.tokenize=a),l.context.insideString=!1,l.context.stringQuote=null,"string"}}function v(r,d){let l=!1,c;for(;c=r.next();){if(c==="/"&&l){d.tokenize=a;break}l=c==="*"}return"comment"}function b(r,d,l){return r.context=new A(r.indention,d,l,null,r.context)}function C(r){if(!r.context.prev)return;let d=r.context.type;return(d===")"||d==="]"||d==="}")&&(r.indention=r.context.indentation),r.context=r.context.prev,r.context}return{startState:function(){return{tokenize:null,context:new A(0,0,"top",!1),indention:0,startOfLine:!0}},token:function(r,d){let l=d.context;if(r.sol()&&(l.align==null&&(l.align=!1),d.indention=r.indentation(),d.startOfLine=!0),r.eatSpace())return null;i=null;let c=(d.tokenize||a)(r,d);return c==="comment"||(l.align==null&&(l.align=!0),i==="{"?b(d,r.column(),"}"):i==="["?b(d,r.column(),"]"):i==="("?b(d,r.column(),")"):(i==="}"&&l.type==="}"||i===l.type)&&C(d),d.startOfLine=!1),c},indent:function(r,d){if(r.tokenize!==a&&r.tokenize!=null||r.context.type=="top")return 0;let l=r.context,g=d.charAt(0)===l.type;return l.align?l.column+(g?0:1):l.indentation+(g?0:e)},electricChars:"{}):",closeBrackets:"()[]{}''\"\"``",fold:"brace",blockCommentStart:"/*",blockCommentEnd:"*/",lineComment:"//"}});CodeMirror.defineMIME("text/x-vmod","vmod");var z=class{constructor(e){this.hash=e}saveCode(e){}getCode(e){return this.getSharedCode(e)}getSharedCode(e){let t=new FormData;t.append("hash",this.hash),fetch("/query",{method:"post",body:t}).then(i=>i.json()).then(i=>i).then(i=>{if(console.log(i),!i.found){e({code:z.CODE_NOT_FOUND});return}if(i.error!=""){console.error(i.error),e({code:z.CODE_NOT_FOUND});return}e(i.snippet)}).catch(i=>{console.log(i)})}},E=z;E.QUERY_PARAM_NAME="query",E.CODE_NOT_FOUND="Not found.";var I=class{constructor(e){this.text=e}saveCode(e){}getCode(e){e({code:this.text})}};var U=class{constructor(e){this.onClose=null;this.onWrite=null;this.filters=[];this.element=e}registerCloseHandler(e){this.onClose=e}registerWriteHandler(e){this.onWrite=e}registerFilter(e){this.filters.push(e)}write(e){let t=e.split(`
-`),i=this.getTerminalOutputElement(),a=t.filter(m=>this.filters.every(v=>v(m))).join(`
-`);i.innerHTML+=a+`
-`,this.onWrite!==null&&this.onWrite(e)}writeTestPassed(){let e=`
+"use strict";
+(() => {
+  var __defProp = Object.defineProperty;
+  var __defProps = Object.defineProperties;
+  var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __propIsEnum = Object.prototype.propertyIsEnumerable;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
+    for (var prop in b || (b = {}))
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    if (__getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(b)) {
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
+      }
+    return a;
+  };
+  var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+  var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+
+  // src/v.ts
+  var baseAttributes = [
+    "params",
+    "noinit",
+    "required",
+    "skip",
+    "assert_continues",
+    "unsafe",
+    "manualfree",
+    "heap",
+    "nonnull",
+    "primary",
+    "inline",
+    "direct_array_access",
+    "live",
+    "flag",
+    "noinline",
+    "noreturn",
+    "typedef",
+    "console",
+    "sql",
+    "table",
+    "deprecated",
+    "deprecated_after",
+    "export",
+    "callconv"
+  ];
+  var word = "[\\w_]+";
+  var simpleAttributesRegexp = new RegExp(`^(${baseAttributes.join("|")})]$`);
+  var keyValue = `(${word}: ${word})`;
+  var singleKeyValueAttributesRegexp = new RegExp(`^${keyValue}]$`);
+  var severalSingleKeyValueAttributesRegexp = new RegExp(`^(${baseAttributes.join("|")}(; ?)?){2,}]$`);
+  var keyValueAttributesRegexp = new RegExp(`^((${keyValue})(; )?){2,}]$`);
+  var ifAttributesRegexp = new RegExp(`^if ${word} \\??]`);
+  var Context = class {
+    constructor(indentation, column, type, align, prev, knownImports = /* @__PURE__ */ new Set()) {
+      this.indentation = indentation;
+      this.column = column;
+      this.type = type;
+      this.align = align;
+      this.prev = prev;
+      this.knownImports = knownImports;
+      /**
+       * Whenever current position inside a string.
+       */
+      this.insideString = false;
+      /**
+       * Current quotation mark.
+       * Valid only when insideString is true.
+       */
+      this.stringQuote = null;
+      /**
+       * Whenever next token expected to be an import name.
+       * Used for highlighting import names in import statements.
+       */
+      this.expectedImportName = false;
+    }
+  };
+  __name(Context, "Context");
+  var keywords = /* @__PURE__ */ new Set([
+    "as",
+    "asm",
+    "assert",
+    "atomic",
+    "break",
+    "const",
+    "continue",
+    "defer",
+    "else",
+    "enum",
+    "fn",
+    "for",
+    "go",
+    "goto",
+    "if",
+    "import",
+    "in",
+    "interface",
+    "is",
+    "isreftype",
+    "lock",
+    "match",
+    "module",
+    "mut",
+    "none",
+    "or",
+    "pub",
+    "return",
+    "rlock",
+    "select",
+    "shared",
+    "sizeof",
+    "static",
+    "struct",
+    "spawn",
+    "type",
+    "typeof",
+    "union",
+    "unsafe",
+    "volatile",
+    "__global",
+    "__offsetof"
+  ]);
+  var pseudoKeywords = /* @__PURE__ */ new Set([
+    "sql",
+    "chan",
+    "thread"
+  ]);
+  var hashDirectives = /* @__PURE__ */ new Set([
+    "#flag",
+    "#include",
+    "#pkgconfig"
+  ]);
+  var atoms = /* @__PURE__ */ new Set([
+    "true",
+    "false",
+    "nil",
+    "print",
+    "println",
+    "exit",
+    "panic",
+    "error",
+    "dump"
+  ]);
+  var builtinTypes = /* @__PURE__ */ new Set([
+    "bool",
+    "string",
+    "i8",
+    "i16",
+    "int",
+    "i32",
+    "i64",
+    "i128",
+    "u8",
+    "u16",
+    "u32",
+    "u64",
+    "u128",
+    "rune",
+    "f32",
+    "f64",
+    "isize",
+    "usize",
+    "voidptr",
+    "any"
+  ]);
+  CodeMirror.defineMode("v", (config) => {
+    var _a2;
+    const indentUnit = (_a2 = config.indentUnit) != null ? _a2 : 0;
+    const isOperatorChar = /[+\-*&^%:=<>!?|\/]/;
+    let curPunc = null;
+    function eatIdentifier(stream) {
+      stream.eatWhile(/[\w$_\xa1-\uffff]/);
+      return stream.current();
+    }
+    __name(eatIdentifier, "eatIdentifier");
+    function tokenBase(stream, state) {
+      const ch = stream.next();
+      if (ch === null) {
+        return null;
+      }
+      if (state.context.insideString && ch === "}") {
+        stream.eat("}");
+        state.tokenize = tokenString(state.context.stringQuote);
+        return "end-interpolation";
+      }
+      if (ch === '"' || ch === "'" || ch === "`") {
+        state.tokenize = tokenString(ch);
+        return state.tokenize(stream, state);
+      }
+      if ((ch === "r" || ch === "c") && (stream.peek() == '"' || stream.peek() == "'")) {
+        const next2 = stream.next();
+        if (next2 === null) {
+          return "string";
+        }
+        state.tokenize = tokenRawString(next2);
+        return "string";
+      }
+      if (ch === ".") {
+        if (!stream.match(/^[0-9]+([eE][\-+]?[0-9]+)?/)) {
+          return "operator";
+        }
+      }
+      if (ch === "[") {
+        if (stream.match(simpleAttributesRegexp)) {
+          return "attribute";
+        }
+        if (stream.match(singleKeyValueAttributesRegexp)) {
+          return "attribute";
+        }
+        if (stream.match(severalSingleKeyValueAttributesRegexp)) {
+          return "attribute";
+        }
+        if (stream.match(keyValueAttributesRegexp)) {
+          return "attribute";
+        }
+        if (stream.match(ifAttributesRegexp)) {
+          return "attribute";
+        }
+      }
+      if (/[\d.]/.test(ch)) {
+        if (ch === "0") {
+          stream.match(/^[xX][0-9a-fA-F_]+/) || stream.match(/^o[0-7_]+/) || stream.match(/^b[0-1_]+/);
+        } else {
+          stream.match(/^[0-9_]*\.?[0-9_]*([eE][\-+]?[0-9_]+)?/);
+        }
+        return "number";
+      }
+      if (/[\[\]{}(),;:.]/.test(ch)) {
+        curPunc = ch;
+        return null;
+      }
+      if (ch === "/") {
+        if (stream.eat("*")) {
+          state.tokenize = tokenComment;
+          return tokenComment(stream, state);
+        }
+        if (stream.eat("/")) {
+          stream.skipToEnd();
+          return "comment";
+        }
+      }
+      if (isOperatorChar.test(ch)) {
+        stream.eatWhile(isOperatorChar);
+        return "operator";
+      }
+      if (ch === "@") {
+        eatIdentifier(stream);
+        return "at-identifier";
+      }
+      if (ch === "$") {
+        const ident = eatIdentifier(stream).slice(1);
+        if (keywords.has(ident)) {
+          return "keyword";
+        }
+        return "compile-time-identifier";
+      }
+      stream.backUp(2);
+      const wasDot = stream.next() === ".";
+      stream.next();
+      const cur = eatIdentifier(stream);
+      if (cur === "import") {
+        state.context.expectedImportName = true;
+      }
+      if (keywords.has(cur))
+        return "keyword";
+      if (pseudoKeywords.has(cur))
+        return "keyword";
+      if (atoms.has(cur))
+        return "atom";
+      if (hashDirectives.has(cur))
+        return "hash-directive";
+      if (!wasDot) {
+        if (builtinTypes.has(cur))
+          return "builtin";
+      }
+      if (cur.length > 0 && cur[0].toUpperCase() === cur[0]) {
+        return "type";
+      }
+      const next = stream.peek();
+      if (next === "(" || next === "<") {
+        return "function";
+      }
+      if (next === "[") {
+        stream.next();
+        const after = stream.next();
+        stream.backUp(2);
+        if (after != null && after.match(/[A-Z]/i)) {
+          return "function";
+        }
+      }
+      if (state.context.expectedImportName && stream.peek() !== ".") {
+        state.context.expectedImportName = false;
+        if (state.context.knownImports === void 0) {
+          state.context.knownImports = /* @__PURE__ */ new Set();
+        }
+        state.context.knownImports.add(cur);
+        return "import-name";
+      }
+      if (wasDot) {
+        return "property";
+      }
+      if (state.context.knownImports.has(cur) && stream.peek() == ".") {
+        return "import-name";
+      }
+      return "variable";
+    }
+    __name(tokenBase, "tokenBase");
+    function tokenLongInterpolation(stream, state) {
+      if (stream.match("}")) {
+        state.tokenize = tokenString(state.context.stringQuote);
+        return "end-interpolation";
+      }
+      state.tokenize = tokenBase;
+      return state.tokenize(stream, state);
+    }
+    __name(tokenLongInterpolation, "tokenLongInterpolation");
+    function tokenShortInterpolation(stream, state) {
+      const ch = stream.next();
+      if (ch === " ") {
+        state.tokenize = tokenString(state.context.stringQuote);
+        return state.tokenize(stream, state);
+      }
+      if (ch === ".") {
+        return "operator";
+      }
+      const ident = eatIdentifier(stream);
+      if (ident[0].toLowerCase() === ident[0].toUpperCase()) {
+        state.tokenize = tokenString(state.context.stringQuote);
+        return state.tokenize(stream, state);
+      }
+      const next = stream.next();
+      stream.backUp(1);
+      if (next === ".") {
+        state.tokenize = tokenShortInterpolation;
+      } else {
+        state.tokenize = tokenString(state.context.stringQuote);
+      }
+      return "variable";
+    }
+    __name(tokenShortInterpolation, "tokenShortInterpolation");
+    function tokenNextInterpolation(stream, state) {
+      let next = stream.next();
+      if (next === "$" && stream.eat("{")) {
+        state.tokenize = tokenLongInterpolation;
+        return "start-interpolation";
+      }
+      if (next === "$") {
+        state.tokenize = tokenShortInterpolation;
+        return "start-interpolation";
+      }
+      return "string";
+    }
+    __name(tokenNextInterpolation, "tokenNextInterpolation");
+    function tokenNextEscape(stream, state) {
+      let next = stream.next();
+      if (next === "\\") {
+        stream.next();
+        state.tokenize = tokenString(state.context.stringQuote);
+        return "valid-escape";
+      }
+      return "string";
+    }
+    __name(tokenNextEscape, "tokenNextEscape");
+    function isValidEscapeChar(ch) {
+      return ch === "n" || ch === "t" || ch === "r" || ch === "\\" || ch === '"' || ch === "'" || ch === "0";
+    }
+    __name(isValidEscapeChar, "isValidEscapeChar");
+    function tokenString(quote) {
+      return function(stream, state) {
+        state.context.insideString = true;
+        state.context.stringQuote = quote;
+        let next = "";
+        let escaped = false;
+        let end = false;
+        while ((next = stream.next()) != null) {
+          if (next === quote && !escaped) {
+            end = true;
+            break;
+          }
+          if (next === "$" && !escaped && stream.eat("{")) {
+            state.tokenize = tokenNextInterpolation;
+            stream.backUp(2);
+            return "string";
+          }
+          if (next === "$" && !escaped) {
+            state.tokenize = tokenNextInterpolation;
+            stream.backUp(1);
+            return "string";
+          }
+          if (escaped && isValidEscapeChar(next)) {
+            stream.backUp(2);
+            state.tokenize = tokenNextEscape;
+            return "string";
+          }
+          escaped = !escaped && next === "\\";
+        }
+        if (end || escaped) {
+          state.tokenize = tokenBase;
+        }
+        state.context.insideString = false;
+        state.context.stringQuote = null;
+        return "string";
+      };
+    }
+    __name(tokenString, "tokenString");
+    function tokenRawString(quote) {
+      return function(stream, state) {
+        state.context.insideString = true;
+        state.context.stringQuote = quote;
+        let next = "";
+        let escaped = false;
+        let end = false;
+        while ((next = stream.next()) != null) {
+          if (next === quote && !escaped) {
+            end = true;
+            break;
+          }
+          escaped = !escaped && next === "\\";
+        }
+        if (end || escaped) {
+          state.tokenize = tokenBase;
+        }
+        state.context.insideString = false;
+        state.context.stringQuote = null;
+        return "string";
+      };
+    }
+    __name(tokenRawString, "tokenRawString");
+    function tokenComment(stream, state) {
+      let maybeEnd = false;
+      let ch;
+      while (ch = stream.next()) {
+        if (ch === "/" && maybeEnd) {
+          state.tokenize = tokenBase;
+          break;
+        }
+        maybeEnd = ch === "*";
+      }
+      return "comment";
+    }
+    __name(tokenComment, "tokenComment");
+    function pushContext(state, column, type) {
+      return state.context = new Context(state.indention, column, type, null, state.context, state.context.knownImports);
+    }
+    __name(pushContext, "pushContext");
+    function popContext(state) {
+      if (!state.context.prev)
+        return;
+      const t = state.context.type;
+      if (t === ")" || t === "]" || t === "}")
+        state.indention = state.context.indentation;
+      state.context = state.context.prev;
+      return state.context;
+    }
+    __name(popContext, "popContext");
+    return {
+      startState: function() {
+        return {
+          tokenize: null,
+          context: new Context(0, 0, "top", false),
+          indention: 0,
+          startOfLine: true
+        };
+      },
+      token: function(stream, state) {
+        const ctx = state.context;
+        if (stream.sol()) {
+          if (ctx.align == null) {
+            ctx.align = false;
+          }
+          state.indention = stream.indentation();
+          state.startOfLine = true;
+        }
+        if (stream.eatSpace()) {
+          return null;
+        }
+        curPunc = null;
+        const style = (state.tokenize || tokenBase)(stream, state);
+        if (style === "comment") {
+          return style;
+        }
+        if (ctx.align == null) {
+          ctx.align = true;
+        }
+        if (curPunc === "{")
+          pushContext(state, stream.column(), "}");
+        else if (curPunc === "[")
+          pushContext(state, stream.column(), "]");
+        else if (curPunc === "(")
+          pushContext(state, stream.column(), ")");
+        else if (curPunc === "}" && ctx.type === "}")
+          popContext(state);
+        else if (curPunc === ctx.type)
+          popContext(state);
+        state.startOfLine = false;
+        return style;
+      },
+      indent: function(state, textAfter) {
+        if (state.tokenize !== tokenBase && state.tokenize != null) {
+          return 0;
+        }
+        if (state.context.type == "top") {
+          return 0;
+        }
+        const ctx = state.context;
+        const firstChar = textAfter.charAt(0);
+        const closing = firstChar === ctx.type;
+        if (ctx.align) {
+          return ctx.column + (closing ? 0 : 1);
+        }
+        return ctx.indentation + (closing ? 0 : indentUnit);
+      },
+      // @ts-ignore
+      electricChars: "{}):",
+      // @ts-ignore
+      closeBrackets: "()[]{}''\"\"``",
+      fold: "brace",
+      blockCommentStart: "/*",
+      blockCommentEnd: "*/",
+      lineComment: "//"
+    };
+  });
+  CodeMirror.defineMIME("text/x-v", "v");
+
+  // src/vmod.ts
+  var Context2 = class {
+    constructor(indentation, column, type, align, prev) {
+      this.indentation = indentation;
+      this.column = column;
+      this.type = type;
+      this.align = align;
+      this.prev = prev;
+      /**
+       * Whenever current position inside a string.
+       */
+      this.insideString = false;
+      /**
+       * Current quotation mark.
+       * Valid only when insideString is true.
+       */
+      this.stringQuote = null;
+    }
+  };
+  __name(Context2, "Context");
+  var keywords2 = /* @__PURE__ */ new Set([
+    "Module"
+  ]);
+  CodeMirror.defineMode("vmod", (config) => {
+    var _a2;
+    const indentUnit = (_a2 = config.indentUnit) != null ? _a2 : 0;
+    const isOperatorChar = /[+\-*&^%:=<>!?|\/]/;
+    let curPunc = null;
+    function eatIdentifier(stream) {
+      stream.eatWhile(/[\w$_\xa1-\uffff]/);
+      return stream.current();
+    }
+    __name(eatIdentifier, "eatIdentifier");
+    function tokenBase(stream, state) {
+      const ch = stream.next();
+      if (ch === null) {
+        return null;
+      }
+      if (ch === '"' || ch === "'" || ch === "`") {
+        state.tokenize = tokenString(ch);
+        return state.tokenize(stream, state);
+      }
+      if (ch === ".") {
+        if (!stream.match(/^[0-9]+([eE][\-+]?[0-9]+)?/)) {
+          return "operator";
+        }
+      }
+      if (/[\d.]/.test(ch)) {
+        if (ch === "0") {
+          stream.match(/^[xX][0-9a-fA-F_]+/) || stream.match(/^o[0-7_]+/) || stream.match(/^b[0-1_]+/);
+        } else {
+          stream.match(/^[0-9_]*\.?[0-9_]*([eE][\-+]?[0-9_]+)?/);
+        }
+        return "number";
+      }
+      if (/[\[\]{}(),;:.]/.test(ch)) {
+        curPunc = ch;
+        return null;
+      }
+      if (ch === "/") {
+        if (stream.eat("*")) {
+          state.tokenize = tokenComment;
+          return tokenComment(stream, state);
+        }
+        if (stream.eat("/")) {
+          stream.skipToEnd();
+          return "comment";
+        }
+      }
+      if (isOperatorChar.test(ch)) {
+        stream.eatWhile(isOperatorChar);
+        return "operator";
+      }
+      const cur = eatIdentifier(stream);
+      if (keywords2.has(cur))
+        return "keyword";
+      const next = stream.peek();
+      if (next === "(" || next === "<") {
+        return "function";
+      }
+      if (next === ":") {
+        return "property";
+      }
+      return "variable";
+    }
+    __name(tokenBase, "tokenBase");
+    function tokenString(quote) {
+      return function(stream, state) {
+        state.context.insideString = true;
+        state.context.stringQuote = quote;
+        let next = "";
+        let escaped = false;
+        let end = false;
+        while ((next = stream.next()) != null) {
+          if (next === quote && !escaped) {
+            end = true;
+            break;
+          }
+          escaped = !escaped && next === "\\";
+        }
+        if (end || escaped) {
+          state.tokenize = tokenBase;
+        }
+        state.context.insideString = false;
+        state.context.stringQuote = null;
+        return "string";
+      };
+    }
+    __name(tokenString, "tokenString");
+    function tokenComment(stream, state) {
+      let maybeEnd = false;
+      let ch;
+      while (ch = stream.next()) {
+        if (ch === "/" && maybeEnd) {
+          state.tokenize = tokenBase;
+          break;
+        }
+        maybeEnd = ch === "*";
+      }
+      return "comment";
+    }
+    __name(tokenComment, "tokenComment");
+    function pushContext(state, column, type) {
+      return state.context = new Context2(state.indention, column, type, null, state.context);
+    }
+    __name(pushContext, "pushContext");
+    function popContext(state) {
+      if (!state.context.prev)
+        return;
+      const t = state.context.type;
+      if (t === ")" || t === "]" || t === "}")
+        state.indention = state.context.indentation;
+      state.context = state.context.prev;
+      return state.context;
+    }
+    __name(popContext, "popContext");
+    return {
+      startState: function() {
+        return {
+          tokenize: null,
+          context: new Context2(0, 0, "top", false),
+          indention: 0,
+          startOfLine: true
+        };
+      },
+      token: function(stream, state) {
+        const ctx = state.context;
+        if (stream.sol()) {
+          if (ctx.align == null) {
+            ctx.align = false;
+          }
+          state.indention = stream.indentation();
+          state.startOfLine = true;
+        }
+        if (stream.eatSpace()) {
+          return null;
+        }
+        curPunc = null;
+        const style = (state.tokenize || tokenBase)(stream, state);
+        if (style === "comment") {
+          return style;
+        }
+        if (ctx.align == null) {
+          ctx.align = true;
+        }
+        if (curPunc === "{")
+          pushContext(state, stream.column(), "}");
+        else if (curPunc === "[")
+          pushContext(state, stream.column(), "]");
+        else if (curPunc === "(")
+          pushContext(state, stream.column(), ")");
+        else if (curPunc === "}" && ctx.type === "}")
+          popContext(state);
+        else if (curPunc === ctx.type)
+          popContext(state);
+        state.startOfLine = false;
+        return style;
+      },
+      indent: function(state, textAfter) {
+        if (state.tokenize !== tokenBase && state.tokenize != null) {
+          return 0;
+        }
+        if (state.context.type == "top") {
+          return 0;
+        }
+        const ctx = state.context;
+        const firstChar = textAfter.charAt(0);
+        const closing = firstChar === ctx.type;
+        if (ctx.align) {
+          return ctx.column + (closing ? 0 : 1);
+        }
+        return ctx.indentation + (closing ? 0 : indentUnit);
+      },
+      // @ts-ignore
+      electricChars: "{}):",
+      // @ts-ignore
+      closeBrackets: "()[]{}''\"\"``",
+      fold: "brace",
+      blockCommentStart: "/*",
+      blockCommentEnd: "*/",
+      lineComment: "//"
+    };
+  });
+  CodeMirror.defineMIME("text/x-vmod", "vmod");
+
+  // src/Repositories/SharedCodeRepository.ts
+  var _SharedCodeRepository = class {
+    constructor(hash) {
+      this.hash = hash;
+    }
+    saveCode(_) {
+    }
+    getCode(onReady) {
+      return this.getSharedCode(onReady);
+    }
+    getSharedCode(onReady) {
+      const data = new FormData();
+      data.append("hash", this.hash);
+      fetch("/query", {
+        method: "post",
+        body: data
+      }).then((resp) => resp.json()).then((data2) => data2).then((resp) => {
+        console.log(resp);
+        if (!resp.found) {
+          onReady({ code: _SharedCodeRepository.CODE_NOT_FOUND });
+          return;
+        }
+        if (resp.error != "") {
+          console.error(resp.error);
+          onReady({ code: _SharedCodeRepository.CODE_NOT_FOUND });
+          return;
+        }
+        onReady(resp.snippet);
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+  };
+  var SharedCodeRepository = _SharedCodeRepository;
+  __name(SharedCodeRepository, "SharedCodeRepository");
+  SharedCodeRepository.QUERY_PARAM_NAME = "query";
+  SharedCodeRepository.CODE_NOT_FOUND = "Not found.";
+
+  // src/Repositories/TextCodeRepository.ts
+  var TextCodeRepository = class {
+    constructor(text) {
+      this.text = text;
+    }
+    saveCode(_) {
+    }
+    getCode(onReady) {
+      onReady({ code: this.text });
+    }
+  };
+  __name(TextCodeRepository, "TextCodeRepository");
+
+  // src/Terminal/Terminal.ts
+  var Terminal = class {
+    constructor(element) {
+      this.onClose = null;
+      this.onWrite = null;
+      this.filters = [];
+      this.element = element;
+    }
+    registerCloseHandler(handler) {
+      this.onClose = handler;
+    }
+    registerWriteHandler(handler) {
+      this.onWrite = handler;
+    }
+    registerFilter(filter) {
+      this.filters.push(filter);
+    }
+    write(text) {
+      const lines = text.split("\n");
+      const outputElement = this.getTerminalOutputElement();
+      const filteredLines = lines.filter((line) => this.filters.every((filter) => filter(line)));
+      const newText = filteredLines.join("\n");
+      outputElement.innerHTML += newText + "\n";
+      if (this.onWrite !== null) {
+        this.onWrite(text);
+      }
+    }
+    writeTestPassed() {
+      const testPassedElement = `
 <span class="test-passed-line">
     <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="8.50006" cy="8.5" r="6.70953" stroke="#38a13b"/>
@@ -10,8 +819,15 @@
 
     <span>Tests passed</span>
 </span>
-`,t=this.getTerminalOutputElement();t.innerHTML+=e+`
-`,this.onWrite!==null&&this.onWrite("")}writeTestFailed(){let e=`
+`;
+      const outputElement = this.getTerminalOutputElement();
+      outputElement.innerHTML += testPassedElement + "\n";
+      if (this.onWrite !== null) {
+        this.onWrite("");
+      }
+    }
+    writeTestFailed() {
+      const testFailedElement = `
 <span class="test-failed-line">
     <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="8.50006" cy="8.5" r="6.70953" stroke="#AF5050"/>
@@ -20,34 +836,460 @@
 
     <span>Tests failed</span>
 </span>
-`,t=this.getTerminalOutputElement();t.innerHTML+=e+`
-`,this.onWrite!==null&&this.onWrite("")}clear(){this.getTerminalOutputElement().innerHTML=""}mount(){let e=this.element.querySelector(".js-terminal__close-button");e==null||this.onClose===null||e.addEventListener("click",this.onClose)}getTerminalOutputElement(){return this.element.querySelector(".js-terminal__output")}};var B=class{constructor(e){this.removedIndent=0;this.state=0;this.wasUnfolded=!1;this.foldedCode=null;this.unfoldedCode=null;this.currentCodeObtainer=()=>"";let t=this.normalizeCode(e);this.range=this.getSnippetRange(t),this.code=this.removeRangeMarkers(t)}registerCurrentCodeObtainer(e){this.currentCodeObtainer=e}noFolding(){return this.range.start==-1}getCode(){return this.noFolding()?this.code:this.state==1?this.getUnfoldedCode():this.getFoldedCode()}getRunnableCode(){return this.state==1?this.currentCodeObtainer():this.getUnfoldedCodeWithoutCaching()}getRunnableCodeWithMarkers(){return this.getUnfoldedCodeWithoutCaching(!0)}getUnfoldedCode(){return this.unfoldedCode!=null?this.unfoldedCode:this.getUnfoldedCodeWithoutCaching()}getUnfoldedCodeWithoutCaching(e=!1){if(this.noFolding())return this.currentCodeObtainer();let t=this.currentCodeObtainer(),i=" ".repeat(this.removedIndent),u=t.split(`
-`).map(x=>i+x).join(`
-`),a=this.code.split(`
-`),m=a.slice(0,this.range.start).join(`
-`),v=a.slice(a.length-this.range.startFromEnd).join(`
-`),b=[];b.push(m),e&&b.push("//code::start"),b.push(u),e&&b.push("//code::end"),b.push(v);let C=b.join(`
-`);return this.unfoldedCode=C,C}getFoldedCode(){if(this.noFolding())return this.currentCodeObtainer();if(this.foldedCode!=null)return this.foldedCode;this.wasUnfolded&&(this.code=this.currentCodeObtainer());let e=this.code.split(`
-`),t=e.slice(this.range.start,e.length-this.range.startFromEnd).join(`
-`),i=this.normalizeIndents(t);return this.foldedCode=i,i}toggle(){this.state==0?(this.state=1,this.wasUnfolded=!0,this.foldedCode=null):(this.state=0,this.unfoldedCode=null)}getSnippetRange(e){let t=e.split(`
-`),i=t.findIndex(a=>a.trim().startsWith("//code::start")),u=t.findIndex(a=>a.trim().startsWith("//code::end"));return i==-1||u==-1?{start:-1,startFromEnd:0}:{start:i,startFromEnd:t.length-u-1}}normalizeCode(e){let t=this.normalizeIndents(e).split(`
-`);if(t.length>1){let i=t[0],u=t[t.length-1];i.trim().length==0&&t.shift(),u.trim().length==0&&t.pop()}return t.join(`
-`)}normalizeIndents(e){let t=e.split(`
-`),i=t.map(m=>this.lineIndent(m)),u=Math.min(...i),a=t.map(m=>m.substring(u));return this.removedIndent=u,a.join(`
-`)}lineIndent(e){for(let t=0;t<e.length;t++)if(e[t]!==" "&&e[t]!="	")return e.substring(0,t).replaceAll("	","    ").length;return Number.MAX_VALUE}removeRangeMarkers(e){return e.split(`
-`).filter(u=>!u.trim().startsWith("//code::")).join(`
-`)}};var j=class{constructor(e,t,i,u){this.code=e;this.buildArguments=t;this.runArguments=i;this.runConfiguration=u}toFormData(){let e=new FormData;return e.append("code",this.code),e.append("build-arguments",this.buildArguments.join(" ")),e.append("run-arguments",this.runArguments.join(" ")),e.append("run-configuration",this.runConfiguration.toString()),e}},M=class{static runCode(e){return fetch(this.buildUrl("run"),{method:"post",body:e.toFormData()}).then(t=>{if(t.status!=200)throw new Error("Can't run code");return t}).then(t=>t.json()).then(t=>t)}static runTest(e){return fetch(this.buildUrl("run_test"),{method:"post",body:e.toFormData()}).then(t=>{if(t.status!=200)throw new Error("Can't run test");return t}).then(t=>t.json()).then(t=>t)}static buildUrl(e){return this.server!==null&&this.server!==void 0?`${this.server.endsWith("/")?this.server.slice(0,-1):this.server}/${e}`:`/${e}`}};var H=class{constructor(e,t,i,u,a="v"){this.snippet=null;this.onTerminalOpen=[];this.onTerminalClose=[];this.onCodeChange=[];let m={mode:a,lineNumbers:u,matchBrackets:!0,extraKeys:{"Ctrl-/":"toggleComment"},indentWithTabs:!0,indentUnit:4,autoCloseBrackets:!0,showHint:!0,lint:{async:!0,lintOnChange:!0,delay:20},toggleLineComment:{indent:!0,padding:" "},theme:"dark",readOnly:i?"nocursor":!1,scrollbarStyle:"overlay"};this.wrapperElement=e;let v=e.querySelector("textarea");this.editor=CodeMirror.fromTextArea(v,m),this.repository=t,this.repository.getCode(C=>{if(C.code===E.CODE_NOT_FOUND){this.terminal.write("Code for shared link not found.");return}this.updateCode(C.code)}),this.editor.on("change",()=>{var x,r;let C=(r=(x=this.snippet)==null?void 0:x.getRunnableCode())!=null?r:this.editor.getValue();this.onCodeChange.forEach(d=>d(C))});let b=e.querySelector(".js-terminal");if(b==null)throw new Error("Terminal not found, please check that terminal inside editor element");this.terminal=new U(b),this.terminal.registerCloseHandler(()=>{this.closeTerminal(),this.editor.refresh()}),this.terminal.registerWriteHandler(C=>{this.openTerminal()}),this.terminal.registerFilter(C=>!C.trim().startsWith("Failed command")),this.terminal.mount(),this.closeTerminal()}updateCode(e){this.snippet=new B(e),this.snippet.registerCurrentCodeObtainer(()=>this.editor.getValue()),this.setCode(this.snippet.getCode())}setEditorFontSize(e){let t=this.wrapperElement.querySelector(".CodeMirror"),i=e;i.endsWith("px")&&(i=i.slice(0,-2)),t.style.fontSize=i+"px",this.refresh()}setCode(e,t=!1){let i=this.editor.getCursor();this.editor.setValue(e),this.repository.saveCode(e),t&&this.editor.setCursor(i)}getCode(){var e;return(e=this.snippet)==null?void 0:e.getCode()}copyCode(){let e=this.getCode();return navigator.clipboard.writeText(e)}getRunnableCodeSnippet(e,t,i){var u;return new j((u=this.snippet)==null?void 0:u.getRunnableCode(),e,t,i)}toggleSnippet(){if(this.snippet!==null){if(this.snippet.toggle(),this.setCode(this.snippet.getCode()),this.snippet.state==1){let t=this.snippet.getCode().split(`
-`).length,i=this.snippet.range.start,u=t-this.snippet.range.startFromEnd;this.editor.markText({line:0,ch:0},{line:i,ch:0},{readOnly:!0,inclusiveLeft:!0,inclusiveRight:!1}),this.editor.markText({line:u,ch:0},{line:t,ch:0},{readOnly:!0,inclusiveLeft:!0,inclusiveRight:!1}),this.editor.operation(()=>{for(let a=0;a<i;a++)this.editor.addLineClass(a,"background","unmodifiable-line");for(let a=u;a<t;a++)this.editor.addLineClass(a,"background","unmodifiable-line")})}this.refresh()}}openTerminal(){this.terminalSsClosed()&&(this.wrapperElement.classList.remove("closed-terminal"),this.onTerminalOpen.forEach(e=>e()))}closeTerminal(){this.terminalSsClosed()||(this.wrapperElement.classList.add("closed-terminal"),this.onTerminalClose.forEach(e=>e()))}terminalSsClosed(){return this.wrapperElement.classList.contains("closed-terminal")}setTheme(e){var t;this.editor.setOption("theme",e.name()),(t=this.wrapperElement)==null||t.setAttribute("data-theme",e.name())}refresh(){this.editor.refresh()}registerOnTerminalOpen(e){this.onTerminalOpen.push(e)}registerOnTerminalClose(e){this.onTerminalClose.push(e)}registerOnCodeChange(e){this.onCodeChange.push(e)}};var K=`
+`;
+      const outputElement = this.getTerminalOutputElement();
+      outputElement.innerHTML += testFailedElement + "\n";
+      if (this.onWrite !== null) {
+        this.onWrite("");
+      }
+    }
+    writeOutputEqual() {
+      const testPassedElement = `
+<span class="test-passed-line">
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8.50006" cy="8.5" r="6.70953" stroke="#38a13b"/>
+        <path d="M5.06188 8.93582L8.00653 10.9566L11.4065 5.35109" stroke="#38a13b"/>
+    </svg>
+
+    <span>Output Equal</span>
+</span>
+`;
+      const outputElement = this.getTerminalOutputElement();
+      outputElement.innerHTML += testPassedElement + "\n";
+      if (this.onWrite !== null) {
+        this.onWrite("");
+      }
+    }
+    clear() {
+      this.getTerminalOutputElement().innerHTML = "";
+    }
+    mount() {
+      const closeButton = this.element.querySelector(".js-terminal__close-button");
+      if (closeButton === null || closeButton === void 0 || this.onClose === null) {
+        return;
+      }
+      closeButton.addEventListener("click", this.onClose);
+    }
+    getTerminalOutputElement() {
+      return this.element.querySelector(".js-terminal__output");
+    }
+  };
+  __name(Terminal, "Terminal");
+
+  // src/Snippet.ts
+  var Snippet = class {
+    constructor(code) {
+      this.removedIndent = 0;
+      this.state = 0 /* Folded */;
+      this.wasUnfolded = false;
+      this.foldedCode = null;
+      this.unfoldedCode = null;
+      this.currentCodeObtainer = /* @__PURE__ */ __name(() => "", "currentCodeObtainer");
+      const normalizedCode = this.normalizeCode(code);
+      this.range = this.getSnippetRange(normalizedCode);
+      this.code = this.removeRangeMarkers(normalizedCode);
+    }
+    registerCurrentCodeObtainer(obtainer) {
+      this.currentCodeObtainer = obtainer;
+    }
+    noFolding() {
+      return this.range.start == -1;
+    }
+    getCode() {
+      if (this.noFolding()) {
+        return this.code;
+      }
+      if (this.state == 1 /* Unfolded */) {
+        return this.getUnfoldedCode();
+      }
+      return this.getFoldedCode();
+    }
+    getRunnableCode() {
+      if (this.state == 1 /* Unfolded */) {
+        return this.currentCodeObtainer();
+      }
+      return this.getUnfoldedCodeWithoutCaching();
+    }
+    getRunnableCodeWithMarkers() {
+      return this.getUnfoldedCodeWithoutCaching(true);
+    }
+    getUnfoldedCode() {
+      if (this.unfoldedCode != null) {
+        return this.unfoldedCode;
+      }
+      return this.getUnfoldedCodeWithoutCaching();
+    }
+    getUnfoldedCodeWithoutCaching(withMarkers = false) {
+      if (this.noFolding()) {
+        return this.currentCodeObtainer();
+      }
+      const visibleCode = this.currentCodeObtainer();
+      const indent = " ".repeat(this.removedIndent);
+      const indented = visibleCode.split("\n").map((line) => indent + line).join("\n");
+      const lines = this.code.split("\n");
+      const prefix = lines.slice(0, this.range.start).join("\n");
+      const suffix = lines.slice(lines.length - this.range.startFromEnd).join("\n");
+      const parts = [];
+      parts.push(prefix);
+      if (withMarkers) {
+        parts.push("//code::start");
+      }
+      parts.push(indented);
+      if (withMarkers) {
+        parts.push("//code::end");
+      }
+      parts.push(suffix);
+      const code = parts.join("\n");
+      this.unfoldedCode = code;
+      return code;
+    }
+    getFoldedCode() {
+      if (this.noFolding()) {
+        return this.currentCodeObtainer();
+      }
+      if (this.foldedCode != null) {
+        return this.foldedCode;
+      }
+      if (this.wasUnfolded) {
+        this.code = this.currentCodeObtainer();
+      }
+      const lines = this.code.split("\n");
+      const rawFoldedCode = lines.slice(this.range.start, lines.length - this.range.startFromEnd).join("\n");
+      const code = this.normalizeIndents(rawFoldedCode);
+      this.foldedCode = code;
+      return code;
+    }
+    toggle() {
+      if (this.state == 0 /* Folded */) {
+        this.state = 1 /* Unfolded */;
+        this.wasUnfolded = true;
+        this.foldedCode = null;
+      } else {
+        this.state = 0 /* Folded */;
+        this.unfoldedCode = null;
+      }
+    }
+    getSnippetRange(code) {
+      const lines = code.split("\n");
+      const startLine = lines.findIndex((line) => line.trim().startsWith("//code::start"));
+      const endLine = lines.findIndex((line) => line.trim().startsWith("//code::end"));
+      if (startLine == -1 || endLine == -1) {
+        return { start: -1, startFromEnd: 0 };
+      }
+      return {
+        start: startLine,
+        startFromEnd: lines.length - endLine - 1
+      };
+    }
+    // code:
+    // ```
+    //
+    //     fn foo() {
+    //       println!("Hello, world!");
+    //     }
+    //
+    // ```
+    // output:
+    // ```
+    // fn foo() {
+    //   println!("Hello, world!");
+    // }
+    // ```
+    normalizeCode(code) {
+      const trimmed = this.normalizeIndents(code).split("\n");
+      if (trimmed.length > 1) {
+        const first = trimmed[0];
+        const last = trimmed[trimmed.length - 1];
+        if (first.trim().length == 0) {
+          trimmed.shift();
+        }
+        if (last.trim().length == 0) {
+          trimmed.pop();
+        }
+      }
+      return trimmed.join("\n");
+    }
+    normalizeIndents(code) {
+      const lines = code.split("\n");
+      const indents = lines.map((line) => this.lineIndent(line));
+      const minIndent = Math.min(...indents);
+      const trimmed = lines.map((line) => line.substring(minIndent));
+      this.removedIndent = minIndent;
+      return trimmed.join("\n");
+    }
+    lineIndent(line) {
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] !== " " && line[i] != "	") {
+          const substring = line.substring(0, i).replaceAll("	", "    ");
+          return substring.length;
+        }
+      }
+      return Number.MAX_VALUE;
+    }
+    removeRangeMarkers(code) {
+      const lines = code.split("\n");
+      const filtered = lines.filter((line) => !line.trim().startsWith("//code::"));
+      return filtered.join("\n");
+    }
+  };
+  __name(Snippet, "Snippet");
+
+  // src/CodeRunner/CodeRunner.ts
+  var RunnableCodeSnippet = class {
+    constructor(code, buildArguments, runArguments, runConfiguration) {
+      this.code = code;
+      this.buildArguments = buildArguments;
+      this.runArguments = runArguments;
+      this.runConfiguration = runConfiguration;
+    }
+    toFormData() {
+      const data = new FormData();
+      data.append("code", this.code);
+      data.append("build-arguments", this.buildArguments.join(" "));
+      data.append("run-arguments", this.runArguments.join(" "));
+      data.append("run-configuration", this.runConfiguration.toString());
+      return data;
+    }
+  };
+  __name(RunnableCodeSnippet, "RunnableCodeSnippet");
+  var CodeRunner = class {
+    static runCode(snippet) {
+      return fetch(this.buildUrl("run"), {
+        method: "post",
+        body: snippet.toFormData()
+      }).then((resp) => {
+        if (resp.status != 200) {
+          throw new Error("Can't run code");
+        }
+        return resp;
+      }).then((resp) => resp.json()).then((data) => data);
+    }
+    static runTest(snippet) {
+      return fetch(this.buildUrl("run_test"), {
+        method: "post",
+        body: snippet.toFormData()
+      }).then((resp) => {
+        if (resp.status != 200) {
+          throw new Error("Can't run test");
+        }
+        return resp;
+      }).then((resp) => resp.json()).then((data) => data);
+    }
+    static runCheckOutput(snippet, expectedOutput) {
+      const formData = snippet.toFormData();
+      formData.append("expected-output", expectedOutput);
+      return fetch(this.buildUrl("check_output"), {
+        method: "post",
+        body: formData
+      }).then((resp) => {
+        if (resp.status != 200) {
+          throw new Error("Can't run output checking");
+        }
+        return resp;
+      }).then((resp) => resp.json()).then((data) => data);
+    }
+    static buildUrl(path) {
+      if (this.server !== null && this.server !== void 0) {
+        const server = this.server.endsWith("/") ? this.server.slice(0, -1) : this.server;
+        return `${server}/${path}`;
+      }
+      return `/${path}`;
+    }
+  };
+  __name(CodeRunner, "CodeRunner");
+
+  // src/Editor/Editor.ts
+  var Editor = class {
+    constructor(wrapper, repository, readonly, showLineNumbers, mode = "v") {
+      this.snippet = null;
+      this.onTerminalOpen = [];
+      this.onTerminalClose = [];
+      this.onCodeChange = [];
+      const editorConfig = {
+        mode,
+        lineNumbers: showLineNumbers,
+        // @ts-ignore
+        matchBrackets: true,
+        extraKeys: {
+          "Ctrl-/": "toggleComment"
+        },
+        indentWithTabs: true,
+        indentUnit: 4,
+        autoCloseBrackets: true,
+        showHint: true,
+        lint: {
+          async: true,
+          lintOnChange: true,
+          delay: 20
+        },
+        toggleLineComment: {
+          indent: true,
+          padding: " "
+        },
+        theme: "dark",
+        readOnly: readonly ? "nocursor" : false,
+        // @ts-ignore
+        scrollbarStyle: "overlay"
+      };
+      this.wrapperElement = wrapper;
+      const place = wrapper.querySelector("textarea");
+      this.editor = CodeMirror.fromTextArea(place, editorConfig);
+      this.repository = repository;
+      this.repository.getCode((snippet) => {
+        if (snippet.code === SharedCodeRepository.CODE_NOT_FOUND) {
+          this.terminal.write("Code for shared link not found.");
+          return;
+        }
+        this.updateCode(snippet.code);
+      });
+      this.editor.on("change", () => {
+        var _a2, _b;
+        const code = (_b = (_a2 = this.snippet) == null ? void 0 : _a2.getRunnableCode()) != null ? _b : this.editor.getValue();
+        this.onCodeChange.forEach((callback) => callback(code));
+      });
+      const terminalElement = wrapper.querySelector(".js-terminal");
+      if (terminalElement === null || terminalElement === void 0) {
+        throw new Error("Terminal not found, please check that terminal inside editor element");
+      }
+      this.terminal = new Terminal(terminalElement);
+      this.terminal.registerCloseHandler(() => {
+        this.closeTerminal();
+        this.editor.refresh();
+      });
+      this.terminal.registerWriteHandler((_) => {
+        this.openTerminal();
+      });
+      this.terminal.registerFilter((line) => {
+        return !line.trim().startsWith("Failed command");
+      });
+      this.terminal.mount();
+      this.closeTerminal();
+    }
+    updateCode(code) {
+      this.snippet = new Snippet(code);
+      this.snippet.registerCurrentCodeObtainer(() => this.editor.getValue());
+      this.setCode(this.snippet.getCode());
+    }
+    setEditorFontSize(size) {
+      const cm = this.wrapperElement.querySelector(".CodeMirror");
+      let normalizedSize = size;
+      if (normalizedSize.endsWith("px")) {
+        normalizedSize = normalizedSize.slice(0, -2);
+      }
+      cm.style.fontSize = normalizedSize + "px";
+      this.refresh();
+    }
+    setCode(code, preserveCursor = false) {
+      const cursor = this.editor.getCursor();
+      this.editor.setValue(code);
+      this.repository.saveCode(code);
+      if (preserveCursor) {
+        this.editor.setCursor(cursor);
+      }
+    }
+    getCode() {
+      var _a2;
+      return (_a2 = this.snippet) == null ? void 0 : _a2.getCode();
+    }
+    copyCode() {
+      const code = this.getCode();
+      return navigator.clipboard.writeText(code);
+    }
+    getRunnableCodeSnippet(buildArguments, runArguments, runConfiguration) {
+      var _a2;
+      return new RunnableCodeSnippet((_a2 = this.snippet) == null ? void 0 : _a2.getRunnableCode(), buildArguments, runArguments, runConfiguration);
+    }
+    toggleSnippet() {
+      if (this.snippet === null) {
+        return;
+      }
+      this.snippet.toggle();
+      this.setCode(this.snippet.getCode());
+      if (this.snippet.state == 1 /* Unfolded */) {
+        const code = this.snippet.getCode();
+        const countLines = code.split("\n").length;
+        const startRange = this.snippet.range.start;
+        const endRange = countLines - this.snippet.range.startFromEnd;
+        this.editor.markText(
+          { line: 0, ch: 0 },
+          { line: startRange, ch: 0 },
+          {
+            readOnly: true,
+            inclusiveLeft: true,
+            inclusiveRight: false
+          }
+        );
+        this.editor.markText(
+          { line: endRange, ch: 0 },
+          { line: countLines, ch: 0 },
+          {
+            readOnly: true,
+            inclusiveLeft: true,
+            inclusiveRight: false
+          }
+        );
+        this.editor.operation(() => {
+          for (let i = 0; i < startRange; i++) {
+            this.editor.addLineClass(i, "background", "unmodifiable-line");
+          }
+          for (let i = endRange; i < countLines; i++) {
+            this.editor.addLineClass(i, "background", "unmodifiable-line");
+          }
+        });
+      }
+      this.refresh();
+    }
+    openTerminal() {
+      if (!this.terminalSsClosed()) {
+        return;
+      }
+      this.wrapperElement.classList.remove("closed-terminal");
+      this.onTerminalOpen.forEach((callback) => callback());
+    }
+    closeTerminal() {
+      if (this.terminalSsClosed()) {
+        return;
+      }
+      this.wrapperElement.classList.add("closed-terminal");
+      this.onTerminalClose.forEach((callback) => callback());
+    }
+    terminalSsClosed() {
+      return this.wrapperElement.classList.contains("closed-terminal");
+    }
+    setTheme(theme) {
+      var _a2;
+      this.editor.setOption("theme", theme.name());
+      (_a2 = this.wrapperElement) == null ? void 0 : _a2.setAttribute("data-theme", theme.name());
+    }
+    refresh() {
+      this.editor.refresh();
+    }
+    registerOnTerminalOpen(callback) {
+      this.onTerminalOpen.push(callback);
+    }
+    registerOnTerminalClose(callback) {
+      this.onTerminalClose.push(callback);
+    }
+    registerOnCodeChange(callback) {
+      this.onCodeChange.push(callback);
+    }
+  };
+  __name(Editor, "Editor");
+
+  // src/template.ts
+  var expandSnippetIcons = `
 <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
     <line x1="8.5" y1="2" x2="8.5" y2="15" stroke="black"/>
     <line x1="15" y1="8.5" x2="2" y2="8.5" stroke="black"/>
 </svg>
-`,Z=`
+`;
+  var collapseSnippetIcons = `
 <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
     <line x1="3.90385" y1="3.9038" x2="13.0962" y2="13.0962" stroke="black"/>
     <line x1="13.0962" y1="3.90382" x2="3.90384" y2="13.0962" stroke="black"/>
 </svg>
-`,X=`<div class="js-playground v-playground">
+`;
+  var template = `<div class="js-playground v-playground">
   <div class="playground__wrapper">
     <div class="playground__editor">
       <div class="js-playground__action-show-all show-all-button">
@@ -102,9 +1344,434 @@
     <span class="js-playground-link playground-link">Playground \u2192</span>
   </div>
 </div>
-`;var R=class{name(){return"dark"}};var O=class{name(){return"light"}};var k=class{constructor(e=null){this.currentTheme=null;this.onChange=[];this.changeThemeButton=null;this.predefinedTheme=null;this.predefinedTheme=e,this.changeThemeButton=document.querySelector(".js-playground__action-change-theme")}registerOnChange(e){this.onChange.push(e)}loadTheme(){if(this.predefinedTheme!==null&&this.predefinedTheme!==void 0){this.turnTheme(this.predefinedTheme);return}this.turnTheme(new R)}turnTheme(e){this.currentTheme=e,this.onChange.forEach(t=>t(e))}turnDarkTheme(){this.turnTheme(new R)}turnLightTheme(){this.turnTheme(new O)}toggleTheme(){this.currentTheme&&(this.currentTheme.name()==="light"?this.turnDarkTheme():this.turnLightTheme())}static findTheme(e){let i=this.themes.filter(u=>u.name()===e)[0];if(i===void 0)throw new Error(`Theme ${e} not found`);return i}};k.themes=[new R,new O];var L=p=>{if(p!=null)return p==="true"},D=p=>Object.fromEntries(Object.entries(p).filter(([e,t])=>t!==void 0));var T=class{constructor(e){this.onSuccessfulRun=[];this.onFailedRun=[];this.onTerminalOpen=[];this.onTerminalClose=[];this.onCodeChange=[];var b,C,x,r,d,l;if(e.selector)this.playgroundElement=document.querySelector(e.selector);else if(e.element)this.playgroundElement=e.element;else throw new Error("No selector or element provided");let t=(C=(b=e.code)!=null?b:this.playgroundElement.textContent)!=null?C:"";this.mount(this.playgroundElement),this.runAsTests=e.configuration==="tests",this.repository=new I(t);let i=this.playgroundElement.querySelector(".v-playground"),u=e.isModuleFile?"vmod":"v";this.editor=new H(i,this.repository,(x=e.highlightOnly)!=null?x:!1,(r=e.showLineNumbers)!=null?r:!0,u),e.fontSize&&this.editor.setEditorFontSize(e.fontSize),this.editor.registerOnTerminalOpen(()=>{this.onTerminalOpen.forEach(c=>c())}),this.editor.registerOnTerminalClose(()=>{this.onTerminalClose.forEach(c=>c())}),this.editor.registerOnCodeChange(c=>{this.onCodeChange.forEach(g=>g(c))});let a=(d=e.theme)!=null?d:"light";if(this.themeManager=new k(k.findTheme(a)),this.themeManager.registerOnChange(c=>{this.setThemeImpl(c)}),this.themeManager.loadTheme(),this.registerRunAction(e.customRunButton,()=>{this.run()}),this.registerAction("copy",()=>{let c=this.editor.copyCode(),g=this.getActionElement("copy");c.then(y=>{g.classList.add("copy-success"),setTimeout(()=>{g.classList.remove("copy-success")},1e3)}).catch(y=>{g.classList.add("copy-error"),setTimeout(()=>{g.classList.remove("copy-error")},1e3),console.log(y),this.editor.terminal.clear(),this.editor.terminal.write("Failed to copy code to clipboard."),this.editor.terminal.write(y)})}),this.registerAction("show-all",()=>{var g;this.editor.toggleSnippet();let c=this.getActionElement("show-all");((g=this.editor.snippet)==null?void 0:g.state)===0?c.innerHTML=K:c.innerHTML=Z}),this.setupPlaygroundLink(),e.showFoldedCodeButton===!1||(l=this.editor.snippet)!=null&&l.noFolding()){let c=this.getActionElement("show-all");c.style.display="none"}let m=this.playgroundElement.querySelector(".js-playground__footer");e.showFooter===!1&&(m.style.display="none",i.classList.add("no-footer"));let v=this.getActionElement("copy");if(e.highlightOnly===!0){let c=this.getActionElement("run");c.style.display="none",e.showCopyButton===!0&&v.classList.remove("bottom"),m.style.display="none"}e.showCopyButton||(v.style.display="none"),e.server!==void 0&&(M.server=e.server)}setCode(e){this.editor.updateCode(e)}setTheme(e){this.setThemeImpl(k.findTheme(e))}setThemeImpl(e){this.editor.setTheme(e)}setupPlaygroundLink(){this.playgroundElement.querySelector(".js-playground-link").addEventListener("click",()=>{var m;let t="https://play.vlang.foundation/?base64=",i=(m=this.editor.snippet)==null?void 0:m.getRunnableCode(),u=btoa(i),a=t+u;window.open(a,"_blank")})}static create(e,t){let i=this.getDefaultConfiguration(),u=this.getConfigurationFromElement(e);return new T(Q(_(_(_({},i),D(t!=null?t:{})),D(u)),{element:e}))}static getDefaultConfiguration(){return{configuration:"run",theme:"light",fontSize:"12px",showLineNumbers:!0,highlightOnly:!1,showFoldedCodeButton:!0,showFooter:!0,showCopyButton:!0,server:"https://play.vlang.foundation/"}}static getConfigurationFromElement(e){var d,l,c,g,y;if(e===null)return{};let t=(d=e==null?void 0:e.getAttribute("data-configuration"))!=null?d:void 0,i=(l=e==null?void 0:e.getAttribute("data-theme"))!=null?l:void 0,u=(c=e.getAttribute("data-font-size"))!=null?c:void 0,a=L(e==null?void 0:e.getAttribute("data-show-line-numbers")),m=L(e.getAttribute("data-highlight-only")),v=L(e==null?void 0:e.getAttribute("data-show-folded-code-button")),b=L(e.getAttribute("data-show-footer")),C=L(e.getAttribute("data-show-copy-button")),x=(g=e==null?void 0:e.getAttribute("data-custom-run-button"))!=null?g:void 0,r=(y=e==null?void 0:e.getAttribute("data-server"))!=null?y:void 0;return{configuration:t,theme:i,fontSize:u,showLineNumbers:a,highlightOnly:m,showFoldedCodeButton:v,showFooter:b,customRunButton:x,showCopyButton:C,server:r}}registerOnSuccessfulRun(e){this.onSuccessfulRun.push(e)}registerOnFailedRun(e){this.onFailedRun.push(e)}registerRunAction(e,t){if(e){let i=document.querySelector(e);if(i===void 0)throw new Error(`Can't find custom button with selector ${e}`);i.addEventListener("click",t);let u=this.getActionElement("run");u.style.display="none";return}this.registerAction("run",t)}mount(e){e!==null&&(e.innerHTML=X)}registerAction(e,t){let i=this.playgroundElement.querySelector(`.js-playground__action-${e}`);if(i===void 0)throw new Error(`Can't find action button with class js-playground__action-${e}`);i.addEventListener("click",t)}getActionElement(e){return this.playgroundElement.querySelector(`.js-playground__action-${e}`)}run(){if(this.runAsTests){this.runTests();return}this.runCode()}runCode(){this.clearTerminal(),this.writeToTerminal("Running code...");let e=this.getRunnableCodeSnippet();M.runCode(e).then(t=>{if(t.error!=""){this.writeToTerminal(t.error),this.onFailedRun.forEach(i=>i());return}this.clearTerminal(),this.writeToTerminal(t.output.split(`
-`).slice(0,-1).join(`
-`)),this.onRunFinished(t)}).catch(t=>{console.log(t),this.writeToTerminal("Can't run code. Please try again."),this.onFailedRun.forEach(i=>i())})}runTests(){this.clearTerminal(),this.writeToTerminal("Running tests...");let e=this.getRunnableCodeSnippet();M.runTest(e).then(t=>{if(this.clearTerminal(),t.error=="")this.editor.terminal.writeTestPassed();else{this.editor.terminal.writeTestFailed();let i=t.error.split(`
-`).slice(2,-6).join(`
-`);this.writeToTerminal(i)}this.onRunFinished(t)}).catch(t=>{console.log(t),this.writeToTerminal("Can't run tests. Please try again."),this.onFailedRun.forEach(i=>i())})}getRunnableCodeSnippet(){let e=0;return this.runAsTests&&(e=1),this.editor.getRunnableCodeSnippet([],[],e)}onRunFinished(e){e.error==""?this.onSuccessfulRun.forEach(t=>t()):this.onFailedRun.forEach(t=>t())}registerOnTerminalOpen(e){this.onTerminalOpen.push(e)}registerOnTerminalClose(e){this.onTerminalClose.push(e)}registerOnCodeChange(e){this.onCodeChange.push(e)}clearTerminal(){this.editor.terminal.clear()}writeToTerminal(e){this.editor.terminal.write(e)}openTerminal(){this.editor.openTerminal()}closeTerminal(){this.editor.closeTerminal()}setEditorFontSize(e){this.editor.setEditorFontSize(e)}};var P=document.currentScript,J,G=(J=P==null?void 0:P.getAttribute("data-selector"))!=null?J:null,me=T.getConfigurationFromElement(P);G&&window.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(G).forEach(p=>{T.create(p,me)})});window.Playground=T;})();
+`;
+
+  // src/themes/Dark.ts
+  var Dark = class {
+    name() {
+      return "dark";
+    }
+  };
+  __name(Dark, "Dark");
+
+  // src/themes/Light.ts
+  var Light = class {
+    name() {
+      return "light";
+    }
+  };
+  __name(Light, "Light");
+
+  // src/ThemeManager/ThemeManager.ts
+  var ThemeManager = class {
+    constructor(predefinedTheme = null) {
+      this.currentTheme = null;
+      this.onChange = [];
+      this.changeThemeButton = null;
+      this.predefinedTheme = null;
+      this.predefinedTheme = predefinedTheme;
+      this.changeThemeButton = document.querySelector(".js-playground__action-change-theme");
+    }
+    registerOnChange(callback) {
+      this.onChange.push(callback);
+    }
+    loadTheme() {
+      if (this.predefinedTheme !== null && this.predefinedTheme !== void 0) {
+        this.turnTheme(this.predefinedTheme);
+        return;
+      }
+      this.turnTheme(new Dark());
+    }
+    turnTheme(theme) {
+      this.currentTheme = theme;
+      this.onChange.forEach((callback) => callback(theme));
+    }
+    turnDarkTheme() {
+      this.turnTheme(new Dark());
+    }
+    turnLightTheme() {
+      this.turnTheme(new Light());
+    }
+    toggleTheme() {
+      if (!this.currentTheme) {
+        return;
+      }
+      if (this.currentTheme.name() === "light") {
+        this.turnDarkTheme();
+      } else {
+        this.turnLightTheme();
+      }
+    }
+    static findTheme(name) {
+      let foundThemes = this.themes.filter((theme2) => theme2.name() === name);
+      const theme = foundThemes[0];
+      if (theme === void 0) {
+        throw new Error(`Theme ${name} not found`);
+      }
+      return theme;
+    }
+  };
+  __name(ThemeManager, "ThemeManager");
+  ThemeManager.themes = [new Dark(), new Light()];
+
+  // src/utils.ts
+  var toBool = /* @__PURE__ */ __name((value) => {
+    if (value === null || value === void 0) {
+      return void 0;
+    }
+    return value === "true";
+  }, "toBool");
+  var definedProps = /* @__PURE__ */ __name((obj) => Object.fromEntries(
+    Object.entries(obj).filter(([k, v]) => v !== void 0)
+  ), "definedProps");
+
+  // src/Playground.ts
+  var Playground = class {
+    constructor(config) {
+      this.onSuccessfulRun = [];
+      this.onFailedRun = [];
+      this.onTerminalOpen = [];
+      this.onTerminalClose = [];
+      this.onCodeChange = [];
+      var _a2, _b, _c, _d, _e, _f;
+      if (config.selector) {
+        this.playgroundElement = document.querySelector(config.selector);
+      } else if (config.element) {
+        this.playgroundElement = config.element;
+      } else {
+        throw new Error("No selector or element provided");
+      }
+      const code = (_b = (_a2 = config.code) != null ? _a2 : this.playgroundElement.textContent) != null ? _b : "";
+      this.mount(this.playgroundElement);
+      this.runAsTests = config.configuration === "tests";
+      this.runAsCheckOutput = config.configuration === "check-output";
+      this.repository = new TextCodeRepository(code);
+      const editorElement = this.playgroundElement.querySelector(".v-playground");
+      const codeMirrorMode = config.isModuleFile ? "vmod" : "v";
+      this.editor = new Editor(editorElement, this.repository, (_c = config.highlightOnly) != null ? _c : false, (_d = config.showLineNumbers) != null ? _d : true, codeMirrorMode);
+      if (config.fontSize) {
+        this.editor.setEditorFontSize(config.fontSize);
+      }
+      if (config.expectedOutput) {
+        this.expectedOutput = config.expectedOutput;
+      }
+      this.editor.registerOnTerminalOpen(() => {
+        this.onTerminalOpen.forEach((callback) => callback());
+      });
+      this.editor.registerOnTerminalClose(() => {
+        this.onTerminalClose.forEach((callback) => callback());
+      });
+      this.editor.registerOnCodeChange((newCode) => {
+        this.onCodeChange.forEach((callback) => callback(newCode));
+      });
+      const theme = (_e = config.theme) != null ? _e : "light";
+      this.themeManager = new ThemeManager(ThemeManager.findTheme(theme));
+      this.themeManager.registerOnChange((theme2) => {
+        this.setThemeImpl(theme2);
+      });
+      this.themeManager.loadTheme();
+      this.registerRunAction(config.customRunButton, () => {
+        this.run();
+      });
+      this.registerAction("copy" /* COPY */, () => {
+        const promise = this.editor.copyCode();
+        const copyActionButton2 = this.getActionElement("copy" /* COPY */);
+        promise.then((r) => {
+          copyActionButton2.classList.add("copy-success");
+          setTimeout(() => {
+            copyActionButton2.classList.remove("copy-success");
+          }, 1e3);
+        }).catch((e) => {
+          copyActionButton2.classList.add("copy-error");
+          setTimeout(() => {
+            copyActionButton2.classList.remove("copy-error");
+          }, 1e3);
+          console.log(e);
+          this.editor.terminal.clear();
+          this.editor.terminal.write("Failed to copy code to clipboard.");
+          this.editor.terminal.write(e);
+        });
+      });
+      this.registerAction("show-all", () => {
+        var _a3;
+        this.editor.toggleSnippet();
+        const showAllActionButton = this.getActionElement("show-all");
+        if (((_a3 = this.editor.snippet) == null ? void 0 : _a3.state) === 0 /* Folded */) {
+          showAllActionButton.innerHTML = expandSnippetIcons;
+        } else {
+          showAllActionButton.innerHTML = collapseSnippetIcons;
+        }
+      });
+      this.setupPlaygroundLink();
+      if (config.showFoldedCodeButton === false || ((_f = this.editor.snippet) == null ? void 0 : _f.noFolding())) {
+        const showAllActionButton = this.getActionElement("show-all");
+        showAllActionButton.style.display = "none";
+      }
+      const footer = this.playgroundElement.querySelector(".js-playground__footer");
+      if (config.showFooter === false) {
+        footer.style.display = "none";
+        editorElement.classList.add("no-footer");
+      }
+      const copyActionButton = this.getActionElement("copy" /* COPY */);
+      if (config.highlightOnly === true) {
+        const runActionButton = this.getActionElement("run" /* RUN */);
+        runActionButton.style.display = "none";
+        if (config.showCopyButton === true) {
+          copyActionButton.classList.remove("bottom");
+        }
+        footer.style.display = "none";
+      }
+      if (!config.showCopyButton) {
+        copyActionButton.style.display = "none";
+      }
+      if (config.server !== void 0) {
+        CodeRunner.server = config.server;
+      }
+    }
+    setCode(code) {
+      this.editor.updateCode(code);
+    }
+    setTheme(name) {
+      this.setThemeImpl(ThemeManager.findTheme(name));
+    }
+    setThemeImpl(theme) {
+      this.editor.setTheme(theme);
+    }
+    setupPlaygroundLink() {
+      const playgroundLink = this.playgroundElement.querySelector(".js-playground-link");
+      playgroundLink.addEventListener("click", () => {
+        var _a2;
+        const baseUrl = "https://play.vlang.foundation/?base64=";
+        const code = (_a2 = this.editor.snippet) == null ? void 0 : _a2.getRunnableCode();
+        const base64Code = btoa(code);
+        const url = baseUrl + base64Code;
+        window.open(url, "_blank");
+      });
+    }
+    static create(element, config) {
+      const defaultConfiguration = this.getDefaultConfiguration();
+      const configuration = this.getConfigurationFromElement(element);
+      return new Playground(__spreadProps(__spreadValues(__spreadValues(__spreadValues({}, defaultConfiguration), definedProps(config != null ? config : {})), definedProps(configuration)), {
+        element
+      }));
+    }
+    static getDefaultConfiguration() {
+      return {
+        configuration: "run" /* RUN */,
+        theme: "light",
+        fontSize: "12px",
+        showLineNumbers: true,
+        highlightOnly: false,
+        showFoldedCodeButton: true,
+        showFooter: true,
+        showCopyButton: true,
+        server: "https://play.vlang.foundation/"
+      };
+    }
+    static getConfigurationFromElement(element) {
+      var _a2, _b, _c, _d, _e, _f, _g;
+      if (element === null) {
+        return {};
+      }
+      const configuration = (_a2 = element == null ? void 0 : element.getAttribute("data-configuration")) != null ? _a2 : void 0;
+      const theme = (_b = element == null ? void 0 : element.getAttribute("data-theme")) != null ? _b : void 0;
+      const fontSize = (_c = element.getAttribute("data-font-size")) != null ? _c : void 0;
+      const showLineNumbers = toBool(element == null ? void 0 : element.getAttribute("data-show-line-numbers"));
+      const highlightOnly = toBool(element.getAttribute("data-highlight-only"));
+      const showFoldedCodeButton = toBool(element == null ? void 0 : element.getAttribute("data-show-folded-code-button"));
+      const showFooter = toBool(element.getAttribute("data-show-footer"));
+      const showCopyButton = toBool(element.getAttribute("data-show-copy-button"));
+      const customRunButton = (_d = element == null ? void 0 : element.getAttribute("data-custom-run-button")) != null ? _d : void 0;
+      const server = (_e = element == null ? void 0 : element.getAttribute("data-server")) != null ? _e : void 0;
+      const expectedOutput = (_f = element == null ? void 0 : element.getAttribute("data-expected-output")) != null ? _f : void 0;
+      return {
+        configuration,
+        theme,
+        fontSize,
+        showLineNumbers,
+        highlightOnly,
+        showFoldedCodeButton,
+        showFooter,
+        customRunButton,
+        showCopyButton,
+        server,
+        expectedOutput: (_g = expectedOutput == null ? void 0 : expectedOutput.split("\\n")) == null ? void 0 : _g.join("\n")
+      };
+    }
+    registerOnSuccessfulRun(callback) {
+      this.onSuccessfulRun.push(callback);
+    }
+    registerOnFailedRun(callback) {
+      this.onFailedRun.push(callback);
+    }
+    registerRunAction(customSelector, callback) {
+      if (customSelector) {
+        const customButton = document.querySelector(customSelector);
+        if (customButton === void 0) {
+          throw new Error(`Can't find custom button with selector ${customSelector}`);
+        }
+        customButton.addEventListener("click", callback);
+        const actionElement = this.getActionElement("run" /* RUN */);
+        actionElement.style.display = "none";
+        return;
+      }
+      this.registerAction("run" /* RUN */, callback);
+    }
+    mount(element) {
+      if (element === null) {
+        return;
+      }
+      element.innerHTML = template;
+    }
+    /**
+     * Register a handler for the default or new action.
+     * @param name - The name of the action.
+     * @param callback - The callback to be called when the action is triggered.
+     */
+    registerAction(name, callback) {
+      const actionButton = this.playgroundElement.querySelector(`.js-playground__action-${name}`);
+      if (actionButton === void 0) {
+        throw new Error(`Can't find action button with class js-playground__action-${name}`);
+      }
+      actionButton.addEventListener("click", callback);
+    }
+    getActionElement(name) {
+      return this.playgroundElement.querySelector(`.js-playground__action-${name}`);
+    }
+    run() {
+      if (this.runAsTests) {
+        this.runTests();
+        return;
+      } else if (this.runAsCheckOutput) {
+        this.runCheckOutput();
+        return;
+      }
+      this.runCode();
+    }
+    runCode() {
+      this.clearTerminal();
+      this.writeToTerminal("Running code...");
+      const snippet = this.getRunnableCodeSnippet();
+      CodeRunner.runCode(snippet).then((result) => {
+        if (result.error != "") {
+          this.writeToTerminal(result.error);
+          this.onFailedRun.forEach((callback) => callback());
+          return;
+        }
+        this.clearTerminal();
+        this.writeToTerminal(result.output.split("\n").slice(0, -1).join("\n"));
+        this.onRunFinished(result);
+      }).catch((err) => {
+        console.log(err);
+        this.writeToTerminal("Can't run code. Please try again.");
+        this.onFailedRun.forEach((callback) => callback());
+      });
+    }
+    runTests() {
+      this.clearTerminal();
+      this.writeToTerminal("Running tests...");
+      const snippet = this.getRunnableCodeSnippet();
+      CodeRunner.runTest(snippet).then((result) => {
+        this.clearTerminal();
+        if (result.error == "") {
+          this.editor.terminal.writeTestPassed();
+        } else {
+          this.editor.terminal.writeTestFailed();
+          const output = result.error.split("\n").slice(2, -6).join("\n");
+          this.writeToTerminal(output);
+        }
+        this.onRunFinished(result);
+      }).catch((err) => {
+        console.log(err);
+        this.writeToTerminal("Can't run tests. Please try again.");
+        this.onFailedRun.forEach((callback) => callback());
+      });
+    }
+    runCheckOutput() {
+      var _a2;
+      this.clearTerminal();
+      this.writeToTerminal("Running checking for output...");
+      const snippet = this.getRunnableCodeSnippet();
+      CodeRunner.runCheckOutput(snippet, (_a2 = this.expectedOutput) != null ? _a2 : "").then((result) => {
+        var _a3;
+        if (result.error != "") {
+          this.writeToTerminal(result.error);
+          this.onFailedRun.forEach((callback) => callback());
+          return;
+        }
+        this.clearTerminal();
+        if (result.is_equal) {
+          this.editor.terminal.writeOutputEqual();
+        } else {
+          this.writeToTerminal("Output is not equal to expected:");
+          this.writeToTerminal("---- Output ----");
+          this.writeToTerminal(result.output + "&lt;end>");
+          this.writeToTerminal("----");
+          this.writeToTerminal("---- Expected Output ----");
+          this.writeToTerminal(((_a3 = this.expectedOutput) != null ? _a3 : "") + "&lt;end>");
+          this.writeToTerminal("----");
+          this.writeToTerminal(result.diff);
+        }
+        this.onRunFinished(result);
+      }).catch((err) => {
+        console.log(err);
+        this.writeToTerminal("Can't check output. Please try again.");
+        this.onFailedRun.forEach((callback) => callback());
+      });
+    }
+    getRunnableCodeSnippet() {
+      let configuration = 0 /* Run */;
+      if (this.runAsTests) {
+        configuration = 1 /* Test */;
+      }
+      return this.editor.getRunnableCodeSnippet([], [], configuration);
+    }
+    onRunFinished(result) {
+      if (result.error == "") {
+        this.onSuccessfulRun.forEach((callback) => callback());
+      } else {
+        this.onFailedRun.forEach((callback) => callback());
+      }
+    }
+    registerOnTerminalOpen(callback) {
+      this.onTerminalOpen.push(callback);
+    }
+    registerOnTerminalClose(callback) {
+      this.onTerminalClose.push(callback);
+    }
+    registerOnCodeChange(callback) {
+      this.onCodeChange.push(callback);
+    }
+    clearTerminal() {
+      this.editor.terminal.clear();
+    }
+    writeToTerminal(text) {
+      this.editor.terminal.write(text);
+    }
+    openTerminal() {
+      this.editor.openTerminal();
+    }
+    closeTerminal() {
+      this.editor.closeTerminal();
+    }
+    setEditorFontSize(size) {
+      this.editor.setEditorFontSize(size);
+    }
+  };
+  __name(Playground, "Playground");
+
+  // src/main.ts
+  var currentScript = document.currentScript;
+  var _a;
+  var selector = (_a = currentScript == null ? void 0 : currentScript.getAttribute("data-selector")) != null ? _a : null;
+  var scriptConfiguration = Playground.getConfigurationFromElement(currentScript);
+  if (selector) {
+    window.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(selector).forEach((element) => {
+        Playground.create(element, scriptConfiguration);
+      });
+    });
+  }
+  window.Playground = Playground;
+})();
 //# sourceMappingURL=playground.js.map

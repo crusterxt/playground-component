@@ -5,6 +5,13 @@ export type RunCodeResponse = {
     error: string
 }
 
+export type CheckOutputResponse = {
+    output: string
+    diff: string
+    is_equal: boolean
+    error: string
+}
+
 export class RunnableCodeSnippet {
     constructor(
         public code: string,
@@ -60,6 +67,24 @@ export class CodeRunner {
             })
             .then(resp => resp.json())
             .then(data => data as RunCodeResponse)
+    }
+
+    public static runCheckOutput(snippet: RunnableCodeSnippet, expectedOutput: string): Promise<CheckOutputResponse> {
+        const formData = snippet.toFormData()
+        formData.append('expected-output', expectedOutput)
+        return fetch(this.buildUrl("check_output"), {
+            method: "post",
+            body: formData,
+        })
+            .then(resp => {
+                if (resp.status != 200) {
+                    throw new Error("Can't run output checking")
+                }
+
+                return resp
+            })
+            .then(resp => resp.json())
+            .then(data => data as CheckOutputResponse)
     }
 
     private static buildUrl(path: string) {

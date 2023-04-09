@@ -31,10 +31,11 @@ export interface PlaygroundConfig {
     customRunButton?: string
     server?: string
     isModuleFile?: boolean
+    expectedOutput?: string
 }
 
 /**
- * Playground is responsible for managing the all playground.
+ * Playground is responsible for managing the all playgrounds.
  */
 export class Playground {
     private readonly playgroundElement: HTMLElement
@@ -42,6 +43,8 @@ export class Playground {
     private readonly editor: Editor
     private readonly themeManager: ThemeManager
     private readonly runAsTests: boolean
+    private readonly runAsCheckOutput: boolean
+    private readonly expectedOutput?: string
     private onSuccessfulRun: (() => void)[] = []
     private onFailedRun: (() => void)[] = []
     private onTerminalOpen: (() => void)[] = [];
@@ -61,6 +64,7 @@ export class Playground {
         this.mount(this.playgroundElement)
 
         this.runAsTests = config.configuration === "tests"
+        this.runAsCheckOutput = config.configuration === "check-output"
         this.repository = new TextCodeRepository(code)
         const editorElement = this.playgroundElement.querySelector(".v-playground") as HTMLElement
         const codeMirrorMode = config.isModuleFile ? "vmod" : "v"
@@ -68,6 +72,10 @@ export class Playground {
 
         if (config.fontSize) {
             this.editor.setEditorFontSize(config.fontSize)
+        }
+
+        if (config.expectedOutput) {
+            this.expectedOutput = config.expectedOutput
         }
 
         this.editor.registerOnTerminalOpen(() => {
@@ -223,6 +231,7 @@ export class Playground {
         const showCopyButton = toBool(element.getAttribute("data-show-copy-button"))
         const customRunButton = element?.getAttribute("data-custom-run-button") ?? undefined
         const server = element?.getAttribute("data-server") ?? undefined
+        const expectedOutput = element?.getAttribute("data-expected-output") ?? undefined
 
         return {
             configuration: configuration,
@@ -235,6 +244,7 @@ export class Playground {
             customRunButton: customRunButton,
             showCopyButton: showCopyButton,
             server: server,
+            expectedOutput: expectedOutput?.split('\\n')?.join('\n'),
         }
     }
 
@@ -292,6 +302,9 @@ export class Playground {
         if (this.runAsTests) {
             this.runTests()
             return
+        } else if (this.runAsCheckOutput) {
+            this.runCheckOutput()
+            return
         }
         this.runCode()
     }
@@ -341,6 +354,42 @@ export class Playground {
             .catch(err => {
                 console.log(err)
                 this.writeToTerminal("Can't run tests. Please try again.")
+                this.onFailedRun.forEach(callback => callback())
+            })
+    }
+
+    public runCheckOutput(): void {
+        this.clearTerminal()
+        this.writeToTerminal("Running checking for output...")
+
+        const snippet = this.getRunnableCodeSnippet()
+        CodeRunner.runCheckOutput(snippet, this.expectedOutput ?? '')
+            .then(result => {
+                if (result.error != "") {
+                    this.writeToTerminal(result.error)
+                    this.onFailedRun.forEach(callback => callback())
+                    return
+                }
+                this.clearTerminal()
+
+                if (result.is_equal) {
+                    this.editor.terminal.writeOutputEqual()
+                } else {
+                    this.writeToTerminal("Output is not equal to expected:")
+                    this.writeToTerminal("---- Output ----")
+                    this.writeToTerminal(result.output + '&lt;end>')
+                    this.writeToTerminal("----")
+                    this.writeToTerminal("---- Expected Output ----")
+                    this.writeToTerminal((this.expectedOutput ?? '') + '&lt;end>')
+                    this.writeToTerminal("----")
+                    this.writeToTerminal(result.diff)
+                }
+
+                this.onRunFinished(result)
+            })
+            .catch(err => {
+                console.log(err)
+                this.writeToTerminal("Can't check output. Please try again.")
                 this.onFailedRun.forEach(callback => callback())
             })
     }

@@ -6,6 +6,7 @@
 ![Playground Component Cover](images/playground-component-cover.png)
 
 Component that creates V-aware editors capable of running code from HTML block elements.
+It uses [V Playground](https://play.vlang.foundation) as a backend.
 
 ## Installation
 

@@ -167,7 +167,6 @@ export const builtinTypes: Set<string> = new Set<string>([
     "isize",
     "usize",
     "voidptr",
-    "any",
 ])
 
 // @ts-ignore

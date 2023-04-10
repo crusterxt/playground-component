@@ -3,6 +3,8 @@
 [![Foundation Official Project][FoundationOfficialBadge]][FoundationUrl]
 [![NPM version][NpmVersionBadge]][NpmUrl]
 
+![Playground Component Cover](images/playground-component-cover.png)
+
 Component that creates V-aware editors capable of running code from HTML block elements.
 
 ## Installation

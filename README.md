@@ -7,6 +7,8 @@
 
 Component that creates V-aware editors capable of running code from HTML block elements.
 It uses [V Playground](https://play.vlang.foundation) as a backend.
+Backend sources can be found
+in [V Playground repository](https://github.com/vlang-foundation/playground).
 
 ## Installation
 

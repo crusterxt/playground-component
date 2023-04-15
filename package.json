@@ -9,9 +9,9 @@
   ],
   "main": "dist/vlang-playground.js",
   "author": {
-    "name": "V Open Source Foundation",
-    "email": "hello@vlang.foundation",
-    "url": "https://vlang.foundation"
+    "name": "V Open Source Community Association",
+    "email": "hello@vosca.dev",
+    "url": "https://vosca.dev"
   },
   "contributors": [
     {

@@ -1,14 +1,14 @@
 # V Playground Component
 
-[![Foundation Official Project][FoundationOfficialBadge]][FoundationUrl]
+[![Association Official Project][AssociationOfficialBadge]][AssociationUrl]
 [![NPM version][NpmVersionBadge]][NpmUrl]
 
 ![Playground Component Cover](images/playground-component-cover.png)
 
 Component that creates V-aware editors capable of running code from HTML block elements.
-It uses [V Playground](https://play.vlang.foundation) as a backend.
+It uses [V Playground](https://play.vosca.dev) as a backend.
 Backend sources can be found
-in [V Playground repository](https://github.com/vlang-foundation/playground).
+in [V Playground repository](https://github.com/vlang-association/playground).
 
 ## Installation
 
@@ -33,13 +33,13 @@ Mostly inspired by [Kotlin Playground](https://github.com/JetBrains/kotlin-playg
 
 This project is under the **MIT License**.
 See the
-[LICENSE](https://github.com/vlang-foundation/playground-component/blob/master/LICENSE)
+[LICENSE](https://github.com/vlang-association/playground-component/blob/master/LICENSE)
 file for the full license text.
 
-[FoundationOfficialBadge]: https://vlang.foundation/badge.svg
+[AssociationOfficialBadge]: https://vosca.dev/badge.svg
 
 [NpmVersionBadge]: https://img.shields.io/npm/v/vlang-playground.svg
 
-[FoundationUrl]: https://vlang.foundation
+[AssociationUrl]: https://vosca.dev
 
 [NpmUrl]: https://www.npmjs.com/package/vlang-playground

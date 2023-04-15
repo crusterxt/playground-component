@@ -186,7 +186,7 @@ export class Playground {
     private setupPlaygroundLink() {
         const playgroundLink = this.playgroundElement.querySelector(".js-playground-link") as HTMLElement
         playgroundLink.addEventListener("click", () => {
-            const baseUrl = "https://play.vlang.foundation/?base64="
+            const baseUrl = "https://play.vosca.dev/?base64="
             const code = this.editor.snippet?.getRunnableCode()!
             const base64Code = btoa(code)
             const url = baseUrl + base64Code
@@ -213,7 +213,7 @@ export class Playground {
             showFoldedCodeButton: true,
             showFooter: true,
             showCopyButton: true,
-            server: "https://play.vlang.foundation/",
+            server: "https://play.vosca.dev/",
         }
     }
 

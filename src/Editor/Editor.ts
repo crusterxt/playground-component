@@ -26,7 +26,7 @@ export class Editor {
             mode: mode,
             lineNumbers: showLineNumbers,
             // @ts-ignore
-            matchBrackets: true,
+            matchBrackets: !readonly,
             extraKeys: {
                 "Ctrl-/": "toggleComment",
             },
@@ -44,7 +44,8 @@ export class Editor {
                 padding: " ",
             },
             theme: "dark",
-            readOnly: readonly ? "nocursor" : false,
+            readOnly: readonly,
+            cursorBlinkRate: readonly ? -1 : 530, // due to bug in cm5, we should not use "nocursor" for readOnly because it breaks copying. We should instead hide the cursor with this option
             // @ts-ignore
             scrollbarStyle: "overlay",
         }

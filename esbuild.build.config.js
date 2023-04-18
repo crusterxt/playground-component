@@ -28,7 +28,7 @@ const codeResult = esbuild.buildSync({
   bundle: true,
   keepNames: false,
   metafile: true,
-  outfile: path.resolve(__dirname, "./public/playground.js"),
+  outfile: path.resolve(__dirname, "./test/playground.js"),
   sourcemap: true,
   platform: "browser",
   target: "es6",

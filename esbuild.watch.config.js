@@ -14,7 +14,7 @@ const styleResult = esbuild.build({
   bundle: true,
   minify: true,
   metafile: true,
-  outfile: path.resolve(__dirname, "./public/vlang-playground.css"),
+  outfile: path.resolve(__dirname, "./test/vlang-playground.css"),
   target: "esnext",
   entryPoints: ["./src/css/index.css"],
   loader: {
@@ -38,7 +38,7 @@ const codeResult = esbuild.build({
   bundle: true,
   keepNames: true,
   metafile: true,
-  outfile: path.resolve(__dirname, "./public/playground.js"),
+  outfile: path.resolve(__dirname, "./test/playground.js"),
   sourcemap: true,
   platform: "browser",
   target: "es6",

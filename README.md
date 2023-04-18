@@ -3,7 +3,7 @@
 [![Association Official Project][AssociationOfficialBadge]][AssociationUrl]
 [![NPM version][NpmVersionBadge]][NpmUrl]
 
-![Playground Component Cover](images/playground-component-cover.png)
+![Playground Component Cover](images/cover.png)
 
 Component that creates V-aware editors capable of running code from HTML block elements.
 It uses [V Playground](https://play.vosca.dev) as a backend.

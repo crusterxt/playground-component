@@ -59,7 +59,7 @@ Run the following commands:
 git clone https://github.com/vlang-association/playground-component
 cd playground-component
 npm install
-npm run prod
+npm run build
 ```
 
 Build files will be located in **dist/** directory.

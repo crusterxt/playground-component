@@ -151,7 +151,8 @@ export class Playground {
 
         const copyActionButton = this.getActionElement(PlaygroundDefaultAction.COPY)
 
-        if (config.highlightOnly === true) {
+        // we cannot run module files
+        if (config.highlightOnly === true || config.isModuleFile === true) {
             const runActionButton = this.getActionElement(PlaygroundDefaultAction.RUN)
             runActionButton.style.display = "none"
 
@@ -232,6 +233,7 @@ export class Playground {
         const customRunButton = element?.getAttribute("data-custom-run-button") ?? undefined
         const server = element?.getAttribute("data-server") ?? undefined
         const expectedOutput = element?.getAttribute("data-expected-output") ?? undefined
+        const isModuleFile = toBool(element?.getAttribute("data-is-module-file"))
 
         return {
             configuration: configuration,
@@ -244,6 +246,7 @@ export class Playground {
             customRunButton: customRunButton,
             showCopyButton: showCopyButton,
             server: server,
+            isModuleFile: isModuleFile,
             expectedOutput: expectedOutput?.split('\\n')?.join('\n'),
         }
     }

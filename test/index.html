@@ -2,17 +2,14 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <title>V Playground: Run, Edit, Share V Code Online</title>
+    <title>V Playground test stand</title>
 
-    <link rel="stylesheet" href="highlight.css">
     <link rel="stylesheet" href="vlang-playground.css">
-<!--    <link rel="stylesheet" href="https://unpkg.com/vlang-playground@1/dist/vlang-playground.css">-->
-<!--    <link rel="stylesheet" href="../dist/vlang-playground.css">-->
+    <!--    <link rel="stylesheet" href="https://unpkg.com/vlang-playground@1/dist/vlang-playground.css">-->
+    <!--    <link rel="stylesheet" href="../dist/vlang-playground.css">-->
 </head>
 
 <style>
-    @import "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap";
-
     * {
         box-sizing: border-box;
     }
@@ -32,17 +29,13 @@
     body {
         background-color: var(--background);
         color: var(--text);
-
-        line-height: 1.7;
-        font-family: Inter, serif;
+        font-family: sans-serif;
     }
 
     article {
         box-sizing: border-box;
         max-width: 800px;
-        margin: 0 auto;
-
-        font-family: Inter,serif;
+        margin: 100px auto 0;
     }
 
     pre {
@@ -61,41 +54,17 @@
         padding: 10px 15px;
     }
 
-    pre code {
-        display: block;
-    }
-
-    code {
-        font-family: "JetBrains Mono", "Fira Mono", JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo, monospace;
-
-        box-sizing: border-box;
-
-        background-color: transparent;
-        border: 0;
-        display: inline;
-        line-height: inherit;
-        margin: 0;
-        overflow: visible;
-        padding: 0;
-        word-wrap: normal;
-    }
-
-    h3 {
-        color: #12b981;
-        margin-left: -18px;
-    }
-
-    h3 span {
-        color: #6c6c6c;
-        font-weight: 400;
-    }
 </style>
-
 <body>
 
 <article>
-    <div class="wrapper" style="">
-        <div class="vlang-code" data-show-footer="true" data-configuration="check-output" data-expected-output="Hello\nmy little\n" data-theme="dark">
+    <div class="wrapper">
+        <div class="vlang-code"
+             data-show-footer="true"
+             data-configuration="check-output"
+             data-expected-output="Hello\nmy little\n"
+             data-theme="dark"
+        >
             fn main() {
                 println("Hello")
                 println("my little")
@@ -103,6 +72,32 @@
         </div>
     </div>
 
+    <div class="wrapper">
+        <div class="vlang-code"
+             data-show-footer="true"
+             data-highlight-only="true"
+             data-theme="dark"
+        >
+            fn main() {
+                println("Hello")
+                println("my little")
+            }
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <div class="vlang-code"
+             data-show-footer="true"
+             data-theme="dark"
+             data-is-module-file="true"
+        >
+            Module {
+                name: 'main'
+                description: 'description'
+                dependencies: ['vweb']
+            }
+        </div>
+    </div>
 </article>
 
 </body>
@@ -116,25 +111,26 @@
 <script src="../codemirror/comment.js"></script>
 <script src="../codemirror/continuecomment.js"></script>
 <script src="../codemirror/matchbrackets.js"></script>
+
+<!-- automatic creation -->
 <script src="./playground.js" data-font-size="14px" data-theme="dark"></script>
-<script>
-    const element = document.querySelector('.vlang-code')
-    const playground = Playground.create(element, {
-        fontSize: '14px',
-        showLineNumbers: true,
-        isModuleFile: false,
-    })
-    playground.setTheme("dark")
 
-    playground.registerOnCodeChange((code) => {
-        console.log(code)
-    })
-</script>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-<script src="javascript.min.js"></script>
 <script>
-    hljs.highlightAll();
+    // manual creation
+    const elements = document.querySelectorAll('.vlang-code')
+    elements.forEach((element) => {
+        const playground = Playground.create(element, {
+            fontSize: '14px',
+            showLineNumbers: true,
+            isModuleFile: false,
+        })
+        playground.setTheme("dark")
+
+        playground.registerOnCodeChange((code) => {
+            console.log(code)
+        })
+    })
 </script>
 
 </html>

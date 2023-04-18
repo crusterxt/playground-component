@@ -53,6 +53,8 @@ And that's it!
 
 ## Build from sources
 
+Run the following commands:
+
 ```bash
 git clone https://github.com/vlang-association/playground-component
 cd playground-component
@@ -61,6 +63,28 @@ npm run prod
 ```
 
 Build files will be located in **dist/** directory.
+
+## Development
+
+Run the following commands:
+
+```bash
+git clone https://github.com/vlang-association/playground-component
+cd playground-component
+npm install
+npm run watch
+```
+
+This will launch a watcher that will rebuild the code when files change.
+
+If you want to change the styles as well, run the following command:
+
+```bash
+npm run sass-watch
+```
+
+Open the **./test/index.html** file in a browser.
+All changes in the code will be visible on the open page.
 
 ## License
 
